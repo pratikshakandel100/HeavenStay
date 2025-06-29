@@ -175,7 +175,7 @@ body {
   gap: var(--space-4);
 }
 
-.sign-in-btn {
+.Register {
   background: none;
   border: none;
   color: var(--neutral-gray-700);
@@ -186,12 +186,12 @@ body {
   transition: all 0.3s ease;
 }
 
-.sign-in-btn:hover {
+.Register:hover {
   color: var(--primary-emerald);
   background-color: var(--light-emerald);
 }
 
-.sign-up-btn {
+.Login {
   background-color: var(--primary-emerald);
   color: var(--neutral-white);
   border: none;
@@ -202,7 +202,7 @@ body {
   transition: all 0.3s ease;
 }
 
-.sign-up-btn:hover {
+.Login:hover {
   background-color: var(--primary-emerald-dark);
   transform: translateY(-1px);
 }

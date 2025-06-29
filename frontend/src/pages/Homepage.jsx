@@ -1,8 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react'; // ✅ import useState
 import { Star, Mountain, Heart, Globe, MapPin } from 'lucide-react';
 import '../style/Homepage.css';
+import Login from "./Login.jsx" // ✅ corrected import
+import Register from './Register.jsx'; // ✅ corrected import
 
 const Homepage = () => {
+  const [showLogin, setShowLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
+
+  const handleSwitchToRegister = () => {
+    setShowLogin(false);
+    setShowRegister(true);
+  };
+
+  const handleSwitchToLogin = () => {
+    setShowRegister(false);
+    setShowLogin(true);
+  };
+
   const popularDestinations = [
     {
       id: 1,
@@ -94,12 +109,27 @@ const Homepage = () => {
               <a href="#" className="nav-link">Host</a>
             </nav>
             <div className="auth-buttons">
-              <button className="sign-in-btn">Sign In</button>
-              <button className="sign-up-btn">Sign Up</button>
+              <button className="Login" onClick={() => setShowLogin(true)}>Login</button>
+              {/* <button className='Register' onClick={() => setShowRegister(true)}>Register</button> */}
+              <button className="Login" onClick={() => setShowRegister(true)}>Register</button>
             </div>
           </div>
         </div>
       </header>
+
+      {/* === POPUP MODALS === */}
+      {showLogin && (
+        <Login
+          onClose={() => setShowLogin(false)}
+          switchToRegister={handleSwitchToRegister}
+        />
+      )}
+      {showRegister && (
+        <Register
+          onClose={() => setShowRegister(false)}
+          switchToLogin={handleSwitchToLogin}
+        />
+      )}
 
       {/* Hero Section */}
       <section className="hero">
@@ -111,20 +141,17 @@ const Homepage = () => {
           />
           <div className="hero-overlay"></div>
         </div>
-        
+
         <div className="hero-content">
           <div className="hero-text">
             <h2 className="hero-title">
-              Discover
-              <span className="hero-title-accent">Nepal</span>
+              Discover <span className="hero-title-accent">Nepal</span>
             </h2>
             <p className="hero-description">
               Experience authentic Nepali hospitality in the heart of the Himalayas. 
               From ancient temples to mountain peaks, your perfect stay awaits.
             </p>
-            <button className="cta-button">
-              Explore Destinations
-            </button>
+            <button className="cta-button">Explore Destinations</button>
           </div>
         </div>
       </section>
@@ -154,7 +181,7 @@ const Homepage = () => {
                     <span>{destination.rating}</span>
                   </div>
                 </div>
-                
+
                 <div className="card-content">
                   <h4 className="card-title">{destination.name}</h4>
                   <p className="card-description">{destination.description}</p>
@@ -162,9 +189,7 @@ const Homepage = () => {
                     <span className="properties-count">
                       {destination.properties} properties
                     </span>
-                    <button className="explore-btn">
-                      Explore →
-                    </button>
+                    <button className="explore-btn">Explore →</button>
                   </div>
                 </div>
               </div>
@@ -186,9 +211,7 @@ const Homepage = () => {
           <div className="features-grid">
             {features.map((feature, index) => (
               <div key={index} className="feature-card">
-                <div className="feature-icon-container">
-                  {feature.icon}
-                </div>
+                <div className="feature-icon-container">{feature.icon}</div>
                 <h4 className="feature-title">{feature.title}</h4>
                 <p className="feature-description">{feature.description}</p>
               </div>
@@ -202,16 +225,12 @@ const Homepage = () => {
         <div className="cultural-pattern"></div>
         <div className="container">
           <div className="banner-content">
-            <h3 className="banner-title">
-              Experience the Heart of Nepal
-            </h3>
+            <h3 className="banner-title">Experience the Heart of Nepal</h3>
             <p className="banner-description">
               From ancient temples to towering peaks, every stay tells a story. 
               Join thousands of travelers who have discovered Nepal's magic through HeavenStay.
             </p>
-            <button className="banner-cta">
-              Start Your Journey
-            </button>
+            <button className="banner-cta">Start Your Journey</button>
           </div>
         </div>
       </section>

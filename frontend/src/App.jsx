@@ -4,6 +4,6 @@ import Register from './pages/Register.jsx';
 import Login from './pages/Login.jsx';
 
 function App() {
-  return <Login/>;
+  return <Homepage/>;
 }
 export default App;
