@@ -1,15 +1,16 @@
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
+import { db_host, db_name, db_password, db_user } from '../utils/constant.js';
 
 dotenv.config();
 
 export const sequelize = new Sequelize(
-  "heavenstay_db",
-  "postgres",
-  "root",
+  db_name,
+  db_user,
+  db_password,
   {
-    host: "localhost",// use .env port if not default
-    dialect: 'postgres',       // you can change to 'mysql', etc.
+    host: db_host,// use .env port if not default
+    dialect: db_user,       // you can change to 'mysql', etc.
     logging: false,            // set true if you want to see SQL queries in console
   }
 );

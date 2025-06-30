@@ -4,12 +4,13 @@ import dotenv from 'dotenv';
 import registerRoutes from './routes/registerRoutes.js';
 import { db } from './config/database.js';
 import loginRoutes from './routes/loginRoutes.js'
+import { port } from './utils/constant.js';
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = port || 3001;
 
 
 // Middleware
