@@ -1,10 +1,12 @@
 {
-  "name": "heavenstay",
+  "name": "heavenstay-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 8000",
+    "start": "vite --port 8000",
+    "clean": "rm -rf node_modules package-lock.json",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
