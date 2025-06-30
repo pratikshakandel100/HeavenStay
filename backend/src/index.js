@@ -24,7 +24,7 @@ db();
 
 // ONLY ONE ROUTE - Registration
 app.use('/api/users', registerRoutes);
-app.use("/api/login", loginRoutes);
+app.use("/api/users", loginRoutes);
 
 
 

@@ -1,12 +1,13 @@
 import {sequelize} from "../config/database.js";
 import bcrypt from "bcryptjs";
+import User from '../models/User.js';
 
 export const loginController = async(req,res) => {
    
    try {
-     const {email, password} = req.body();
+     const {email, password} = req.body;
      
-     const user = await user.findOne({email});
+     const user = await User.findOne({email});
      if(!user){
         res.status(400).json({message:"All field are required"});
      }
@@ -19,7 +20,7 @@ export const loginController = async(req,res) => {
      res.status(200).json({
         message: "Login Successfull",
         user: {
-            id: user.id,
+            _id: user._id,
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
