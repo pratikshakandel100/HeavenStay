@@ -2,7 +2,7 @@ import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/database.js';
 import bcrypt from 'bcryptjs';
 
-const User = sequelize.define('user2', {
+const User = sequelize.define('user9', {
   _id: {
     type: DataTypes.UUID,
     primaryKey: true,
@@ -65,14 +65,13 @@ const User = sequelize.define('user2', {
     }
   }
 }, {
-  tableName: 'user2',
+  tableName: 'user9',
   timestamps: true,
   createdAt: 'created_at',
   updatedAt: 'updated_at',
   hooks: {
     beforeCreate: async (user) => {
       if (user.password) {
-      
         user.password = await bcrypt.hash(user.password, 12);
       }
     },

@@ -1,8 +1,10 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import "../style/Login.css";
-
+import {useNavigate} from "react-router-dom"
 const Login = ({ onClose, switchToRegister }) => {
+
+  const navigate = useNavigate()
   const {
     register,
     handleSubmit,
@@ -12,22 +14,26 @@ const Login = ({ onClose, switchToRegister }) => {
   } = useForm();
 
   const onSubmit = async (data) => {
+    console.log(1)
     try {
-      const response = await fetch("http://localhost:3001/api/users/login", {
+      const response = await fetch("http://localhost:2000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-
+      console.log(2)
       const result = await response.json();
-
-      if (response.ok) {
+      console.log(result)
+       console.log(3)
+      if (response.success) {
+        console.log("here..")
+        console.log(result)
         alert("Login successful!");
-        reset();
-        onClose(); // close modal on success
+        await navigate("/dashboard")
       } else {
         if (result.message) {
           // Show API error as alert or setError
+          console.log()
           alert(result.message);
         } else {
           alert("Login failed");

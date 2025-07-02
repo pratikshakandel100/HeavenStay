@@ -14,17 +14,29 @@ const Register = ({ onClose, switchToLogin }) => {
 
   const password = watch("password");
 
-  const onSubmit = async (data) => {
+  const onSubmit = async(data) => {
     try {
-      const response = await fetch("http://localhost:3001/api/users/register", {
+      // fetch()
+    
+      const reponse = await fetch("http://localhost:2000/api/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          firstName: data.firstName,
+          lastName: data.lastName, 
+          country: data.country ,
+           email: data.email, 
+           password: data.password, 
+           phoneNumber: data.phoneNumber, 
+           dateOfBirth: data.dateOfBirth
+        })
+      })
+    
+      const real_response = await reponse.json()
 
-      const result = await response.json();
-
-      if (result.success) {
+      if (real_response.success) {
         alert("Registration successful! You can now login.");
         reset();
         setTimeout(() => switchToLogin(), 2000);
