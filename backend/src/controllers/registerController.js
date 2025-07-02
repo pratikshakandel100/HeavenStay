@@ -1,7 +1,16 @@
 import User from '../models/User.js';
 import { validateRegistration } from '../middleware/validation.js';
 
-
+/*
+step 1 : import model/user.js
+step 2: function registerController
+step 3: body bata data ligne
+step 4: validate garne
+step 5: email validation 
+step 6: password encrypt
+step 7: insert database 
+step 8: response
+;*/
 async function  registerController(req, res) {
     try {
       console.log(' request received:', req.body);

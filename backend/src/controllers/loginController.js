@@ -3,7 +3,14 @@ import bcrypt from "bcryptjs";
 import User from '../models/User.js';
 
 export const loginController = async(req,res) => {
-   
+   /*
+import model
+email and password bogy bata ligne
+validate email and password
+database ma email search garera users ko whole data ligne
+database ma vako email and password lai user le deko emailand password check garne
+res sent garna
+*/
    try {
      const {email, password} = req.body;
      
