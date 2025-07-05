@@ -1,8 +1,8 @@
-import React, { useState } from 'react'; // ✅ import useState
-import { Star, Mountain, Heart, Globe, MapPin } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, Mountain, Heart, Globe } from 'lucide-react';
 import '../style/Homepage.css';
-import Login from "./Login.jsx" // ✅ corrected import
-import Register from './Register.jsx'; // ✅ corrected import
+import Login from './Login.jsx';
+import Register from './Register.jsx';
 
 const Homepage = () => {
   const [showLogin, setShowLogin] = useState(false);
@@ -89,33 +89,32 @@ const Homepage = () => {
 
   return (
     <div className="homepage">
-      {/* Header */}
       <header className="header">
-        <div className="container">
-          <div className="header-content">
-            <div className="logo">
-              <div className="logo-icon">
-                <Mountain className="mountain-icon" />
-              </div>
-              <div className="logo-text">
-                <h1>HeavenStay</h1>
-                <p>Nepal</p>
-              </div>
-            </div>
-            <nav className="navigation">
-              <a href="#" className="nav-link">Stays</a>
-              <a href="#" className="nav-link">Experiences</a>
-              <a href="#" className="nav-link">About Nepal</a>
-              <a href="#" className="nav-link">Host</a>
-            </nav>
-            <div className="auth-buttons">
-              <button className="Login" onClick={() => setShowLogin(true)}>Login</button>
-              {/* <button className='Register' onClick={() => setShowRegister(true)}>Register</button> */}
-              <button className="Login" onClick={() => setShowRegister(true)}>Register</button>
-            </div>
-          </div>
-        </div>
-      </header>
+  <div className="container header-content">
+    <nav className="navigation">
+      <a href="#" className="nav-link">Stays</a>
+      <a href="#" className="nav-link">Experiences</a>
+      <a href="#" className="nav-link">About Nepal</a>
+      <a href="#" className="nav-link">Host</a>
+    </nav>
+
+    <div className="logo">
+      <div className="logo-icon">
+        <Mountain className="mountain-icon" />
+      </div>
+      <div className="logo-text">
+        <h1>HeavenStay</h1>
+        <p>Nepal</p>
+      </div>
+    </div>
+
+    <div className="auth-buttons">
+      <button className="Register" onClick={() => setShowRegister(true)}>Register</button>
+      <button className="Login" onClick={() => setShowLogin(true)}>Login</button>
+    </div>
+  </div>
+</header>
+
 
       {/* === POPUP MODALS === */}
       {showLogin && (
@@ -148,7 +147,7 @@ const Homepage = () => {
               Discover <span className="hero-title-accent">Nepal</span>
             </h2>
             <p className="hero-description">
-              Experience authentic Nepali hospitality in the heart of the Himalayas. 
+              Experience authentic Nepali hospitality in the heart of the Himalayas.
               From ancient temples to mountain peaks, your perfect stay awaits.
             </p>
             <button className="cta-button">Explore Destinations</button>
@@ -162,8 +161,8 @@ const Homepage = () => {
           <div className="section-header">
             <h3 className="section-title">Sacred Places & Heritage Sites</h3>
             <p className="section-description">
-              Explore Nepal's most sacred temples and heritage sites, where spirituality 
-              meets ancient architecture in the heart of the Himalayas
+              Explore Nepal's most sacred temples and heritage sites, where spirituality
+              meets ancient architecture in the heart of the Himalayas.
             </p>
           </div>
 
@@ -204,7 +203,7 @@ const Homepage = () => {
           <div className="section-header">
             <h3 className="section-title">Why Choose HeavenStay Nepal?</h3>
             <p className="section-description">
-              Experience Nepal like never before with authentic stays and genuine local connections
+              Experience Nepal like never before with authentic stays and genuine local connections.
             </p>
           </div>
 
@@ -219,77 +218,6 @@ const Homepage = () => {
           </div>
         </div>
       </section>
-
-      {/* Cultural Banner */}
-      <section className="cultural-banner">
-        <div className="cultural-pattern"></div>
-        <div className="container">
-          <div className="banner-content">
-            <h3 className="banner-title">Experience the Heart of Nepal</h3>
-            <p className="banner-description">
-              From ancient temples to towering peaks, every stay tells a story. 
-              Join thousands of travelers who have discovered Nepal's magic through HeavenStay.
-            </p>
-            <button className="banner-cta">Start Your Journey</button>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="footer">
-        <div className="container">
-          <div className="footer-grid">
-            <div className="footer-brand">
-              <div className="footer-logo">
-                <div className="logo-icon">
-                  <Mountain className="mountain-icon" />
-                </div>
-                <div className="logo-text">
-                  <h4>HeavenStay</h4>
-                  <p>Nepal</p>
-                </div>
-              </div>
-              <p className="footer-description">
-                Connecting travelers with authentic Nepali experiences in the heart of the Himalayas.
-              </p>
-            </div>
-
-            <div className="footer-column">
-              <h5 className="footer-heading">Company</h5>
-              <ul className="footer-links">
-                <li><a href="#">About Us</a></li>
-                <li><a href="#">Careers</a></li>
-                <li><a href="#">Press</a></li>
-                <li><a href="#">Blog</a></li>
-              </ul>
-            </div>
-
-            <div className="footer-column">
-              <h5 className="footer-heading">Support</h5>
-              <ul className="footer-links">
-                <li><a href="#">Help Center</a></li>
-                <li><a href="#">Safety</a></li>
-                <li><a href="#">Cancellation</a></li>
-                <li><a href="#">Contact Us</a></li>
-              </ul>
-            </div>
-
-            <div className="footer-column">
-              <h5 className="footer-heading">Community</h5>
-              <ul className="footer-links">
-                <li><a href="#">Host</a></li>
-                <li><a href="#">Experiences</a></li>
-                <li><a href="#">Referrals</a></li>
-                <li><a href="#">Gift Cards</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="footer-bottom">
-            <p>&copy; 2025 HeavenStay Nepal. All rights reserved. Made with ❤️ for Nepal.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

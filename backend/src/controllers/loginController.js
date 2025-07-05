@@ -1,6 +1,8 @@
 import {sequelize} from "../config/database.js";
 import bcrypt from "bcryptjs";
 import User from '../models/User.js';
+import jwt from "jsonwebtoken";
+import { secrete_key } from "../utils/constant.js";
 
 export const loginController = async(req,res) => {
    /*
@@ -24,6 +26,8 @@ res sent garna
      if(!isPasswordValid){
         res.status(401).json({message: "Invalid email or password"});
      }
+     const _id = user._id;
+     const accessToken = jwt.sign({_id}, secrete_key);
      res.status(200).json({
         message: "Login Successfull",
         user: {
@@ -34,6 +38,7 @@ res sent garna
             country: user.country,
             phoneNumber: user.phoneNumber
         },
+        accessToken
      })
     
 
