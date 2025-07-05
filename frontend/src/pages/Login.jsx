@@ -20,7 +20,7 @@ const Login = ({ onClose, switchToRegister }) => {
       });
 
       const result = await response.json();
-
+      console.log(result);
       if (response.ok) {
         alert("Login successful!");
         reset();
