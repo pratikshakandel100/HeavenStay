@@ -101,8 +101,9 @@ const ProfileComponent = ({ user, setUser }) => {
 
   return (
     <>
-      {/* Your component JSX remains the same from this point on */}
-      {/* You already pasted the full TSX JSX code; it doesn't need to be altered for JS except type annotations which are already removed above */}
+      
+      
+      annotations which are already removed above */}
     </>
   );
 };
