@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Filter, MoreVertical, Hotel, MapPin, Star, DollarSign, Eye, Edit, Trash2, CheckCircle, XCircle, X } from 'lucide-react';
-import AdminButton from '../../components/Admin/AdminCommon/AdminButton';
-import AdminModal from '../../components/Admin/AdminCommon/AdminModal';
+import Button from '../../components/Hoteler/common/Button';
+import Modal from '../../components/Hoteler/common/Modal';
 
 const HotelListings = () => {
   const [hotels, setHotels] = useState([

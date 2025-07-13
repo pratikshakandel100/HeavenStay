@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Mail, Phone, MapPin, Save, Edit, Camera, Shield, Key, Calendar } from 'lucide-react';
-import AdminButton from '../../components/Admin/AdminCommon/AdminButton';
+import Button from '../../components/Hoteler/common/Button';
 
 const AdminProfile = () => {
   const [isEditing, setIsEditing] = useState(false);

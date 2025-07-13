@@ -24,7 +24,7 @@ import Rooms from './pages/Hotelerpages/Rooms.jsx';
 //Hoteler
 import MainLayout from './components/Hoteler/layout/MainLayout.jsx';
 import HotelerDashboard from './pages/Hotelerpages/HotelerDashboard.jsx';
-import Hotels from './pages/Hotelerpages/Hotels.jsx';
+// import Hotels from './pages/Hotelerpages/Hotels.jsx';
 import Bookings from './pages/Hotelerpages/Bookings.jsx';
 import Messages from './pages/Hotelerpages/Messages.jsx';
 import HotelerReviews from './pages/Hotelerpages/HotelerReviews.jsx';
@@ -56,13 +56,16 @@ function App() {
   });
 
   return (
-    
-
+  
   <BrowserRouter>
-    <div className="min-h-screen bg-gray-50">
-      <Header user={user} />
-      <main className="container mx-auto px-4 py-8">
+
         <Routes>
+          {/* Homepage Route */}
+          <Route path="/" element={<HomeP />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          
+
           {/* User Routes */}
           <Route path="/users" element={<Dashboard />} />
           <Route path="/hotel/:id" element={<HotelDetails />} />
@@ -73,9 +76,9 @@ function App() {
           <Route path="/reviews/:bookingId" element={<Reviews />} />
 
           {/* Hoteler Routes */}
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="dashboard" element={<Dashboard />} />
+          <Route path="/hoteler" element={<MainLayout />}>
+            <Route index element={<HotelerDashboard />} />
+            <Route path="dashboard" element={<HotelerDashboard />} />
             <Route path="rooms" element={<Rooms />} />
             <Route path="bookings" element={<Bookings />} />
             <Route path="messages" element={<Messages />} />
@@ -99,8 +102,6 @@ function App() {
            
           </Route>
         </Routes>
-      </main>
-    </div>
   </BrowserRouter>
 );
 

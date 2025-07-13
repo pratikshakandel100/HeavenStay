@@ -2,26 +2,33 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './AdminHeader';
+
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <AdminSidebar 
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-      />
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <AdminHeader 
-          setSidebarOpen={setSidebarOpen}
+    <div className="h-screen overflow-hidden bg-gray-50">
+      {/* Fixed Sidebar */}
+      <div className="fixed top-0 left-0 h-full w-64 bg-white border-r z-20">
+        <AdminSidebar
           sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
         />
-        
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 pt-16 lg:ml-1">
-          <div className="p-4 lg:p-6">
-            <Outlet />
-          </div>
+      </div>
+
+      {/* Main content wrapper with margin-left for fixed sidebar */}
+      <div className="ml-64 flex flex-col h-full">
+        {/* Header (sticky if needed) */}
+        <div className="sticky top-0 z-10">
+          <AdminHeader
+            setSidebarOpen={setSidebarOpen}
+            sidebarOpen={sidebarOpen}
+          />
+        </div>
+
+        {/* Scrollable content */}
+        <main className="flex-1 overflow-y-auto p-4 mt-10 lg:p-6">
+          <Outlet />
         </main>
       </div>
     </div>
