@@ -44,6 +44,7 @@ import HotelListings from './pages/Admin/HotelListings.jsx';
 import Notifications from './pages/Admin/Notification.jsx';
 import AdminAnalytics from './pages/Admin/AdminAnalytics.jsx';
 import Settings from './pages/Admin/Settings.jsx';
+import AdminProfile from './pages/Admin/AdminProfile.jsx';
 
 
 function App() {
@@ -94,6 +95,8 @@ function App() {
             <Route path="notifications" element={<Notifications />} />
             <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="adminprofile" element={<AdminProfile />} />
+           
           </Route>
         </Routes>
       </main>

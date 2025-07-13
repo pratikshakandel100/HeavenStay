@@ -5,7 +5,6 @@ import {
   Users, 
   Building, 
   Hotel, 
-  Bell, 
   BarChart3, 
   Settings,
   X,
@@ -21,7 +20,6 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { id: 'users', label: 'User Management', icon: Users, path: '/admin/users' },
     { id: 'hoteliers', label: 'Hotelier Management', icon: Building, path: '/admin/hoteliers' },
     { id: 'hotels', label: 'Hotel Listings', icon: Hotel, path: '/admin/hotels' },
-    { id: 'notifications', label: 'Notifications', icon: Bell, path: '/admin/notifications' },
     { id: 'analytics', label: 'Analytics & Reports', icon: BarChart3, path: '/admin/analytics' },
     { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
   ];

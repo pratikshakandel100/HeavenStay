@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Search, Filter, MoreVertical, Hotel, MapPin, Star, DollarSign, Eye, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Filter, MoreVertical, Hotel, MapPin, Star, DollarSign, Eye, Edit, Trash2, CheckCircle, XCircle, X } from 'lucide-react';
 import AdminButton from '../../components/Admin/AdminCommon/AdminButton';
+import AdminModal from '../../components/Admin/AdminCommon/AdminModal';
 
 const HotelListings = () => {
   const [hotels, setHotels] = useState([
@@ -16,7 +17,18 @@ const HotelListings = () => {
       image: 'https://images.pexels.com/photos/261102/pexels-photo-261102.jpeg?auto=compress&cs=tinysrgb&w=400',
       bookings: 156,
       revenue: 125000,
-      submissionDate: '2024-01-15'
+      submissionDate: '2024-01-15',
+      description: 'Luxury resort with stunning mountain views and world-class amenities.',
+      amenities: ['WiFi', 'Pool', 'Spa', 'Restaurant', 'Gym', 'Room Service'],
+      contact: {
+        phone: '+977-61-123456',
+        email: 'info@grandparadise.com'
+      },
+      policies: {
+        checkIn: '2:00 PM',
+        checkOut: '12:00 PM',
+        cancellation: 'Free cancellation up to 24 hours before check-in'
+      }
     },
     {
       id: 2,
@@ -30,7 +42,18 @@ const HotelListings = () => {
       image: 'https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&cs=tinysrgb&w=400',
       bookings: 0,
       revenue: 0,
-      submissionDate: '2024-01-20'
+      submissionDate: '2024-01-20',
+      description: 'Cozy lodge nestled in the heart of the Himalayas.',
+      amenities: ['WiFi', 'Restaurant', 'Parking', 'Heating'],
+      contact: {
+        phone: '+977-1-234567',
+        email: 'info@mountainview.com'
+      },
+      policies: {
+        checkIn: '3:00 PM',
+        checkOut: '11:00 AM',
+        cancellation: 'Free cancellation up to 48 hours before check-in'
+      }
     },
     {
       id: 3,
@@ -44,7 +67,18 @@ const HotelListings = () => {
       image: 'https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=400',
       bookings: 89,
       revenue: 85000,
-      submissionDate: '2024-01-10'
+      submissionDate: '2024-01-10',
+      description: 'Modern hotel in the bustling city center with easy access to attractions.',
+      amenities: ['WiFi', 'Business Center', 'Restaurant', 'Laundry', 'Concierge'],
+      contact: {
+        phone: '+977-1-345678',
+        email: 'info@citycenter.com'
+      },
+      policies: {
+        checkIn: '2:00 PM',
+        checkOut: '12:00 PM',
+        cancellation: 'Free cancellation up to 24 hours before check-in'
+      }
     },
     {
       id: 4,
@@ -58,13 +92,32 @@ const HotelListings = () => {
       image: 'https://images.pexels.com/photos/1743229/pexels-photo-1743229.jpeg?auto=compress&cs=tinysrgb&w=400',
       bookings: 67,
       revenue: 45000,
-      submissionDate: '2023-12-20'
+      submissionDate: '2023-12-20',
+      description: 'Peaceful lakeside resort perfect for relaxation and water activities.',
+      amenities: ['WiFi', 'Lake Access', 'Boat Rental', 'Restaurant', 'Spa'],
+      contact: {
+        phone: '+977-61-456789',
+        email: 'info@lakeside.com'
+      },
+      policies: {
+        checkIn: '2:00 PM',
+        checkOut: '11:00 AM',
+        cancellation: 'Free cancellation up to 72 hours before check-in'
+      }
     }
   ]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [showActionMenu, setShowActionMenu] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedHotel, setSelectedHotel] = useState(null);
+
+  const handleViewDetails = (hotel) => {
+    setSelectedHotel(hotel);
+    setShowDetailsModal(true);
+    setShowActionMenu(null);
+  };
 
   const handleApprove = (hotelId) => {
     setHotels(hotels.map(hotel => 
@@ -202,7 +255,7 @@ const HotelListings = () => {
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                       <div className="p-2">
                         <button
-                          onClick={() => alert('View hotel details')}
+                          onClick={() => handleViewDetails(hotel)}
                           className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg flex items-center"
                         >
                           <Eye className="h-4 w-4 mr-2" />
@@ -289,6 +342,139 @@ const HotelListings = () => {
           </div>
         ))}
       </div>
+
+      {/* Hotel Details Modal */}
+      {showDetailsModal && selectedHotel && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-screen items-center justify-center p-4">
+            <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowDetailsModal(false)} />
+            
+            <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 className="text-xl font-semibold text-gray-900">Hotel Details</h3>
+                <button
+                  onClick={() => setShowDetailsModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <div className="p-6">
+                {/* Hotel Image */}
+                <div className="mb-6">
+                  <img 
+                    src={selectedHotel.image} 
+                    alt={selectedHotel.name}
+                    className="w-full h-64 object-cover rounded-lg"
+                  />
+                </div>
+
+                {/* Basic Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h4>
+                    <div className="space-y-3">
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Hotel Name:</span>
+                        <p className="text-gray-900">{selectedHotel.name}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Location:</span>
+                        <p className="text-gray-900">{selectedHotel.location}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Hotelier:</span>
+                        <p className="text-gray-900">{selectedHotel.hotelier}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Rating:</span>
+                        <div className="flex items-center">
+                          <Star className="h-4 w-4 text-yellow-400 mr-1" />
+                          <span className="text-gray-900">{selectedHotel.rating}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Status:</span>
+                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ml-2 ${getStatusColor(selectedHotel.status)}`}>
+                          {selectedHotel.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Business Details</h4>
+                    <div className="space-y-3">
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Total Rooms:</span>
+                        <p className="text-gray-900">{selectedHotel.rooms}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Price per Night:</span>
+                        <p className="text-gray-900">Rs. {selectedHotel.price}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Total Bookings:</span>
+                        <p className="text-gray-900">{selectedHotel.bookings}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Total Revenue:</span>
+                        <p className="text-gray-900">Rs. {selectedHotel.revenue.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Submission Date:</span>
+                        <p className="text-gray-900">{new Date(selectedHotel.submissionDate).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Description</h4>
+                  <p className="text-gray-700">{selectedHotel.description}</p>
+                </div>
+
+                {/* Amenities */}
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Amenities</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedHotel.amenities.map((amenity, index) => (
+                      <span 
+                        key={index}
+                        className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full"
+                      >
+                        {amenity}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Contact & Policies */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">Contact Information</h4>
+                    <div className="space-y-2">
+                      <p className="text-sm"><span className="font-medium">Phone:</span> {selectedHotel.contact.phone}</p>
+                      <p className="text-sm"><span className="font-medium">Email:</span> {selectedHotel.contact.email}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">Policies</h4>
+                    <div className="space-y-2">
+                      <p className="text-sm"><span className="font-medium">Check-in:</span> {selectedHotel.policies.checkIn}</p>
+                      <p className="text-sm"><span className="font-medium">Check-out:</span> {selectedHotel.policies.checkOut}</p>
+                      <p className="text-sm"><span className="font-medium">Cancellation:</span> {selectedHotel.policies.cancellation}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
