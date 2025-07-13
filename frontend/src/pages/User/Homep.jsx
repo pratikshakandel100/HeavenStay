@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 
-import Login from '../../components/Login';
-import Signup from '../../components/Sigin';
-import Homepage from '../../components/Homepage';
+import Login from '../../components/HomepageCompoent/Login';
+import Signup from '../../components/HomepageCompoent/Sigin';
+import Homepage from '../../components/HomepageCompoent/Homepage';
+
 function HomeP() {
   const [currentPage, setCurrentPage] = useState('homepage');
 

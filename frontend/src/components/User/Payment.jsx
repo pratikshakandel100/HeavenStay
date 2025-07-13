@@ -84,129 +84,93 @@ const PaymentComponent = () => {
             <Lock className="text-green-600" size={24} />
             <h1 className="text-2xl font-bold text-gray-900">Secure Payment</h1>
           </div>
+{/* Payment Methods */}
+<div className="mb-6">
+  <h2 className="text-lg font-semibold text-gray-900 mb-4">Payment Method</h2>
+  <div className="space-y-3">
+    <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+      <input
+        type="radio"
+        name="paymentMethod"
+        value="card"
+        checked={paymentMethod === 'card'}
+        onChange={(e) => setPaymentMethod(e.target.value)}
+        className="text-[#437057] focus:ring-[#437057]"
+      />
+      <CreditCard className="text-[#437057]" size={20} />
+      <span className="font-medium">e-Sewa</span>
+    </label>
+    <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+      <input
+        type="radio"
+        name="paymentMethod"
+        value="payAtHotel"
+        checked={paymentMethod === 'payAtHotel'}
+        onChange={(e) => setPaymentMethod(e.target.value)}
+        className="text-[#437057] focus:ring-[#437057]"
+      />
+      <div className="w-5 h-5 bg-[#97B067] rounded-full"></div>
+      <span className="font-medium">Pay at Hotel</span>
+    </label>
+  </div>
+</div>
 
-          {/* Payment Methods */}
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Payment Method</h2>
-            <div className="space-y-3">
-              <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="card"
-                  checked={paymentMethod === 'card'}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="text-[#437057] focus:ring-[#437057]"
-                />
-                <CreditCard className="text-[#437057]" size={20} />
-                <span className="font-medium">Credit/Debit Card</span>
-              </label>
-              <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="payAtHotel"
-                  checked={paymentMethod === 'payAtHotel'}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="text-[#437057] focus:ring-[#437057]"
-                />
-                <div className="w-5 h-5 bg-[#97B067] rounded-full"></div>
-                <span className="font-medium">Pay at Hotel</span>
-              </label>
-            </div>
-          </div>
+{/* e-Sewa Payment Form */}
+{paymentMethod === 'card' && (
+  <form onSubmit={handleSubmit} className="space-y-6">
+    <div>
+      <label htmlFor="cardholderName" className="block text-sm font-medium text-gray-700 mb-2">
+        Name
+      </label>
+      <input
+        type="text"
+        id="cardholderName"
+        name="cardholderName"
+        value={paymentData.cardholderName}
+        onChange={handleInputChange}
+        placeholder="John Doe"
+        required
+        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#437057] focus:border-transparent"
+      />
+    </div>
 
-          {/* Card Payment Form */}
-          {paymentMethod === 'card' && (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label htmlFor="cardholderName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Cardholder Name
-                </label>
-                <input
-                  type="text"
-                  id="cardholderName"
-                  name="cardholderName"
-                  value={paymentData.cardholderName}
-                  onChange={handleInputChange}
-                  placeholder="John Doe"
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#437057] focus:border-transparent"
-                />
-              </div>
+    <div>
+      <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-2">
+        e-Sewa ID
+      </label>
+      <input
+        type="text"
+        id="cardNumber"
+        name="cardNumber"
+        value={paymentData.cardNumber}
+        onChange={handleInputChange}
+        placeholder="98XXXXXXXX"
+        maxLength={10}
+        required
+        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#437057] focus:border-transparent"
+      />
+    </div>
 
-              <div>
-                <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                  Card Number
-                </label>
-                <input
-                  type="text"
-                  id="cardNumber"
-                  name="cardNumber"
-                  value={paymentData.cardNumber}
-                  onChange={handleInputChange}
-                  placeholder="1234 5678 9012 3456"
-                  maxLength={19}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#437057] focus:border-transparent"
-                />
-              </div>
+    <button
+      type="submit"
+      disabled={isProcessing}
+      className="w-full bg-[#2F5249] text-white py-3 px-6 rounded-lg hover:bg-[#437057] transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+    >
+      {isProcessing ? (
+        <>
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+          <span>Processing...</span>
+        </>
+      ) : (
+        <>
+          <Lock size={16} />
+          <span>Pay NPR {bookingData.total.toLocaleString()}</span>
+        </>
+      )}
+    </button>
+  </form>
+)}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700 mb-2">
-                    Expiry Date
-                  </label>
-                  <input
-                    type="text"
-                    id="expiryDate"
-                    name="expiryDate"
-                    value={paymentData.expiryDate}
-                    onChange={handleInputChange}
-                    placeholder="MM/YY"
-                    maxLength={5}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#437057] focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="cvv" className="block text-sm font-medium text-gray-700 mb-2">
-                    CVV
-                  </label>
-                  <input
-                    type="text"
-                    id="cvv"
-                    name="cvv"
-                    value={paymentData.cvv}
-                    onChange={handleInputChange}
-                    placeholder="123"
-                    maxLength={3}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#437057] focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isProcessing}
-                className="w-full bg-[#2F5249] text-white py-3 px-6 rounded-lg hover:bg-[#437057] transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-              >
-                {isProcessing ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    <span>Processing...</span>
-                  </>
-                ) : (
-                  <>
-                    <Lock size={16} />
-                    <span>Pay NPR {bookingData.total.toLocaleString()}</span>
-                  </>
-                )}
-              </button>
-            </form>
-          )}
 
           {/* Pay at Hotel */}
           {paymentMethod === 'payAtHotel' && (
