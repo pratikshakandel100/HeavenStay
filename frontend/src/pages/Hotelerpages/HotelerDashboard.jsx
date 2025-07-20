@@ -66,7 +66,7 @@ const HotelerDashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <QuickActions />
+      {/* <QuickActions /> */}
     </div>
   );
 };

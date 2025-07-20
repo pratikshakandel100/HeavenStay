@@ -40,10 +40,12 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
       )}
       
       {/* Sidebar */}
-      <div className={`fixed border left-0 z-50 w-64 h-screen transform ${
+      <div className={` fixed top-0 left-0 h-full w-64 bg-white border-r z-20 border transform ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       } transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
+
         <div className="flex h-full flex-col" style={{ backgroundColor: '#2F5249' }}>
+
           {/* Logo */}
           <div className="flex items-center justify-between px-6 py-4 h-16">
             <div className="flex items-center">

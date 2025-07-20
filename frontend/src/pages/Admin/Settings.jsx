@@ -69,14 +69,14 @@ const Settings = () => {
           <h2 className="text-2xl font-bold text-gray-900">System Settings</h2>
           <p className="text-gray-600">Configure platform settings and preferences</p>
         </div>
-        <Button
+        <AdminButton
           onClick={handleSaveSettings}
           style={{ backgroundColor: '#437057' }}
           className="hover:opacity-90"
         >
           <Save className="h-4 w-4 mr-2" />
           Save All Settings
-        </Button>
+        </AdminButton>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">

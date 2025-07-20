@@ -15,7 +15,7 @@ function HomeP() {
         return <Signup onBack={() => setCurrentPage('homepage')} />;
       default:
         return (
-          <Homepage 
+          <Homepage
             onLoginClick={() => setCurrentPage('login')}
             onSignupClick={() => setCurrentPage('signup')}
           />

@@ -139,21 +139,21 @@ const AdminAnalytics = () => {
             <option value="PDF">PDF</option>
           </select>
           
-          <Button
+          <AdminButton
             onClick={handleExportData}
             style={{ backgroundColor: '#437057' }}
             className="hover:opacity-90"
           >
             <Download className="h-4 w-4 mr-2" />
             Export Data
-          </Button>
+          </AdminButton>
         </div>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {stats.map((stat, index) => (
-          <StatCard key={index} {...stat} />
+          <AdminStatCard key={index} {...stat} />
         ))}
       </div>
 

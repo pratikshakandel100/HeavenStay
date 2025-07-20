@@ -8,6 +8,8 @@ import HomeP from './pages/User/Homep.jsx';
 import Login from './components/HomepageCompoent/Login.jsx';
 import Signup from './components/HomepageCompoent/Sigin.jsx';
 
+
+
 //UserSide
 import Header from './components/User/Header.jsx';
 import Dashboard from './pages/User/UserSide/Dashboard.jsx';
@@ -21,10 +23,12 @@ import Rooms from './pages/Hotelerpages/Rooms.jsx';
 
 
 
+
+
 //Hoteler
 import MainLayout from './components/Hoteler/layout/MainLayout.jsx';
 import HotelerDashboard from './pages/Hotelerpages/HotelerDashboard.jsx';
-// import Hotels from './pages/Hotelerpages/Hotels.jsx';
+import Hotels from './pages/Hotelerpages/Hotels.jsx';
 import Bookings from './pages/Hotelerpages/Bookings.jsx';
 import Messages from './pages/Hotelerpages/Messages.jsx';
 import HotelerReviews from './pages/Hotelerpages/HotelerReviews.jsx';
@@ -34,8 +38,9 @@ import HotelerPayments from './pages/Hotelerpages/HotelerPayments.jsx';
 
 
 
-//Admin
 
+
+//Admin
 import AdminLayout from './components/Admin/Adminlayout/AdminLayout.jsx';
 import AdminDashboard from './pages/Admin/AdminDashboard.jsx';
 import UserManagement from './pages/Admin/UserManagement.jsx';
@@ -65,7 +70,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           
-
+          
           {/* User Routes */}
           <Route path="/users" element={<Dashboard />} />
           <Route path="/hotel/:id" element={<HotelDetails />} />
@@ -87,6 +92,9 @@ function App() {
             <Route path="hotel-profile" element={<HotelProfile />} />
             <Route path="hoteler-payments" element={<HotelerPayments />} />
           </Route>
+
+         
+
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
