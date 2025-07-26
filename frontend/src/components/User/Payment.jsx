@@ -57,7 +57,7 @@ const PaymentComponent = () => {
 
     setTimeout(() => {
       setIsProcessing(false);
-      navigate('/my-bookings', {
+      navigate('/mybookings', {
         state: {
           paymentSuccess: true,
           bookingId: bookingData.bookingId
@@ -186,7 +186,7 @@ const PaymentComponent = () => {
               </div>
 
               <button
-                onClick={() => navigate('/my-bookings')}
+                onClick={() => navigate('/mybookings')}
                 className="w-full bg-[#2F5249] text-white py-3 px-6 rounded-lg hover:bg-[#437057] transition-colors font-medium flex items-center justify-center space-x-2"
               >
                 <CheckCircle size={16} />

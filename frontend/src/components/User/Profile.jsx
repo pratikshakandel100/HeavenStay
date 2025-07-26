@@ -3,31 +3,21 @@ import {
   User,
   Mail,
   Phone,
-  Camera,
   Save,
   Eye,
   EyeOff,
-  MapPin,
-  Calendar,
-  Globe,
-  CreditCard
+  Camera
 } from 'lucide-react';
 
 const ProfileComponent = ({ user, setUser }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
   const [formData, setFormData] = useState({
     name: user.name,
     email: user.email,
     phone: user.phone,
-    nationality: 'United States',
-    dateOfBirth: '1990-05-15',
-    address: '123 Main Street, New York, NY 10001',
-    passportNumber: 'US123456789',
-    emergencyContact: '+1-555-0123',
-    emergencyContactName: 'Jane Doe',
-    preferredLanguage: 'English',
-    currency: 'USD',
+    nationality: 'Nepal',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
@@ -44,15 +34,9 @@ const ProfileComponent = ({ user, setUser }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (formData.newPassword) {
-      if (formData.newPassword !== formData.confirmPassword) {
-        alert('New passwords do not match');
-        return;
-      }
-      if (formData.newPassword.length < 8) {
-        alert('Password must be at least 8 characters long');
-        return;
-      }
+    if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
+      alert('Passwords do not match!');
+      return;
     }
 
     setUser((prev) => ({
@@ -80,31 +64,134 @@ const ProfileComponent = ({ user, setUser }) => {
     }
   };
 
-  const bookingStats = [
-    { label: 'Total Bookings', value: '12', color: 'text-blue-600' },
-    { label: 'Completed Stays', value: '8', color: 'text-green-600' },
-    { label: 'Upcoming Trips', value: '2', color: 'text-orange-600' },
-    { label: 'Countries Visited', value: '5', color: 'text-purple-600' }
-  ];
-
-  const countries = [
-    'United States', 'Canada', 'United Kingdom', 'Australia', 'Germany',
-    'France', 'Japan', 'India', 'China', 'Nepal'
-  ];
-
-  const languages = [
-    'English', 'Spanish', 'French', 'German',
-    'Chinese', 'Japanese', 'Hindi', 'Nepali'
-  ];
-
-  const currencies = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY', 'CNY', 'INR', 'NPR'];
-
   return (
-    <>
-      
-      
-      annotations which are already removed above */}
-    </>
+    <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
+      <h2 className="text-2xl font-bold mb-6 text-[#2f5249]">My Profile</h2>
+
+      <div className="flex items-center space-x-4 mb-6">
+        <div className="relative w-24 h-24">
+          <img
+            src={user.avatar}
+            alt="Avatar"
+            className="rounded-full w-24 h-24 object-cover border-4 border-[#2f5249]"
+          />
+          {isEditing && (
+            <label className="absolute bottom-0 right-0 bg-[#2f5249] p-1 rounded-full cursor-pointer">
+              <Camera className="w-5 h-5 text-white" />
+              <input type="file" className="hidden" onChange={handleAvatarChange} />
+            </label>
+          )}
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold">{user.name}</h3>
+          <p className="text-sm text-gray-500">{user.email}</p>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Name */}
+        <div>
+          <label className="block text-[#2f5249] font-semibold">Name</label>
+          <div className="flex items-center border rounded px-3">
+            <User className="w-5 h-5 text-[#2f5249]" />
+            <input
+              type="text"
+              name="name"
+              className="w-full px-2 py-2 outline-none"
+              value={formData.name}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+            />
+          </div>
+        </div>
+
+        {/* Email */}
+        <div>
+          <label className="block text-[#2f5249] font-semibold">Email</label>
+          <div className="flex items-center border rounded px-3">
+            <Mail className="w-5 h-5 text-[#2f5249]" />
+            <input
+              type="email"
+              name="email"
+              className="w-full px-2 py-2 outline-none"
+              value={formData.email}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+            />
+          </div>
+        </div>
+
+        {/* Phone */}
+        <div>
+          <label className="block text-[#2f5249] font-semibold">Phone</label>
+          <div className="flex items-center border rounded px-3">
+            <Phone className="w-5 h-5 text-[#2f5249]" />
+            <input
+              type="tel"
+              name="phone"
+              className="w-full px-2 py-2 outline-none"
+              value={formData.phone}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+            />
+          </div>
+        </div>
+
+        {/* Password fields */}
+        {isEditing && (
+          <>
+            <div>
+              <label className="block text-[#2f5249] font-semibold">New Password</label>
+              <div className="flex items-center border rounded px-3">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="newPassword"
+                  className="w-full px-2 py-2 outline-none"
+                  placeholder="New Password"
+                  value={formData.newPassword}
+                  onChange={handleInputChange}
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? <EyeOff className="w-5 h-5 text-[#2f5249]" /> : <Eye className="w-5 h-5 text-[#2f5249]" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[#2f5249] font-semibold">Confirm Password</label>
+              <input
+                type="password"
+                name="confirmPassword"
+                className="w-full border px-3 py-2 rounded outline-none"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+              />
+            </div>
+          </>
+        )}
+
+        <div className="flex justify-between items-center pt-4">
+          <button
+            type="button"
+            onClick={() => setIsEditing(!isEditing)}
+            className="px-5 py-2 border border-[#2f5249] text-[#2f5249] rounded hover:bg-[#2f5249] hover:text-white transition"
+          >
+            {isEditing ? 'Cancel' : 'Edit Profile'}
+          </button>
+
+          {isEditing && (
+            <button
+              type="submit"
+              className="flex items-center gap-2 bg-[#2f5249] text-white px-5 py-2 rounded hover:bg-[#1e392f] transition"
+            >
+              <Save className="w-4 h-4" />
+              Save
+            </button>
+          )}
+        </div>
+      </form>
+    </div>
   );
 };
 

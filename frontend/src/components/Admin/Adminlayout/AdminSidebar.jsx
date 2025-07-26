@@ -74,8 +74,8 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                       onClick={() => handleNavigation(item.path)}
                       className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                         isActive
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-300 hover:text-white hover:bg-white hover:bg-opacity-10'
+                          ? 'bg-white text-orange-900 shadow-sm'
+                          : 'text-gray-300 hover:text-black hover:bg-white hover:bg-opacity-300'
                       }`}
                     >
                       <Icon className="h-5 w-5 mr-3 flex-shrink-0" />

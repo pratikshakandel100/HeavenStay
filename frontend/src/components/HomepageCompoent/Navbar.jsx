@@ -18,8 +18,8 @@ const Navbar = ({ onLoginClick, onSignupClick }) => {
             <a href="#home" className="text-[#2F5249] hover:text-[#437057] transition-colors">Home</a>
             <a href="#hotels" className="text-[#2F5249] hover:text-[#437057] transition-colors">Hotels</a>
             <a href="#destinations" className="text-[#2F5249] hover:text-[#437057] transition-colors">Destinations</a>
-            <a href="#about" className="text-[#2F5249] hover:text-[#437057] transition-colors">About</a>
-            <a href="#contact" className="text-[#2F5249] hover:text-[#437057] transition-colors">Contact</a>
+            {/* <a href="#about" className="text-[#2F5249] hover:text-[#437057] transition-colors">About</a>
+            <a href="#contact" className="text-[#2F5249] hover:text-[#437057] transition-colors">Contact</a> */}
           </div>
           
           {/* Desktop Auth Buttons */}
@@ -54,8 +54,8 @@ const Navbar = ({ onLoginClick, onSignupClick }) => {
               <a href="#home" className="text-[#2F5249] hover:text-[#437057] transition-colors">Home</a>
               <a href="#hotels" className="text-[#2F5249] hover:text-[#437057] transition-colors">Hotels</a>
               <a href="#destinations" className="text-[#2F5249] hover:text-[#437057] transition-colors">Destinations</a>
-              <a href="#about" className="text-[#2F5249] hover:text-[#437057] transition-colors">About</a>
-              <a href="#contact" className="text-[#2F5249] hover:text-[#437057] transition-colors">Contact</a>
+              {/* <a href="#about" className="text-[#2F5249] hover:text-[#437057] transition-colors">About</a>
+              <a href="#contact" className="text-[#2F5249] hover:text-[#437057] transition-colors">Contact</a> */}
               <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
                 <button 
                   onClick={onLoginClick}

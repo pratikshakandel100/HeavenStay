@@ -20,6 +20,8 @@ import Profile from './pages/User/UserSide/Profile.jsx';
 import Payment from './pages/User/UserSide/Payment.jsx';
 import Reviews from './pages/User/UserSide/Reviews.jsx';
 import Rooms from './pages/Hotelerpages/Rooms.jsx';
+import UserLayout from './components/User/userlayout.jsx';
+// import Hotels from './pages/Hotelerpages/Hotels.jsx';
 
 
 
@@ -61,59 +63,63 @@ function App() {
   });
 
   return (
-  
-  <BrowserRouter>
 
-        <Routes>
-          {/* Homepage Route */}
-          <Route path="/" element={<HomeP />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          
-          
-          {/* User Routes */}
-          <Route path="/users" element={<Dashboard />} />
-          <Route path="/hotel/:id" element={<HotelDetails />} />
-          <Route path="/book/:id" element={<BookingForm />} />
-          <Route path="/my-bookings" element={<MyBookings />} />
-          <Route path="/profile" element={<Profile user={user} setUser={setUser} />} />
-          <Route path="/payment/:bookingId" element={<Payment />} />
-          <Route path="/reviews/:bookingId" element={<Reviews />} />
+    <BrowserRouter>
 
-          {/* Hoteler Routes */}
-          <Route path="/hoteler" element={<MainLayout />}>
-            <Route index element={<HotelerDashboard />} />
-            <Route path="dashboard" element={<HotelerDashboard />} />
-            <Route path="rooms" element={<Rooms />} />
-            <Route path="bookings" element={<Bookings />} />
-            <Route path="messages" element={<Messages />} />
-            <Route path="reviews" element={<Reviews />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="hotel-profile" element={<HotelProfile />} />
-            <Route path="hoteler-payments" element={<HotelerPayments />} />
-          </Route>
-
-         
+      <Routes>
+        {/* Homepage Route */}
+        <Route path="/" element={<HomeP />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="hoteliers" element={<HotelierManagement />} />
-            <Route path="hotels" element={<HotelListings />} />
-            <Route path="notifications" element={<Notifications />} />
-            <Route path="analytics" element={<AdminAnalytics />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="adminprofile" element={<AdminProfile />} />
-           
-          </Route>
-        </Routes>
-  </BrowserRouter>
-);
+        <Route path="/users" element={<UserLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="hotel/:id" element={<HotelDetails />} />
+          <Route path="book/:id" element={<BookingForm />} />
+          <Route path="mybookings" element={<MyBookings />} />
+          {/* <Route path="hotel" element={<Hotel />} /> */}
+          <Route path="profile" element={<Profile user={user} setUser={setUser} />} />
+          <Route path="payment/:bookingId" element={<Payment />} />
+          <Route path="reviews/:bookingId" element={<Reviews />} />
+        </Route>
 
-     
+        {/* Hoteler Routes */}
+        <Route path="/hoteler" element={<MainLayout />}>
+          <Route index element={<HotelerDashboard />} />
+          <Route path="dashboard" element={<HotelerDashboard />} />
+          <Route path="rooms" element={<Rooms />} />
+          <Route path="bookings" element={<Bookings />} />
+          <Route path="messages" element={<Messages />} />
+          <Route path="reviews" element={<Reviews />} />
+          <Route path="analytics" element={<Analytics />} />
+        
+          <Route path="hotel-profile" element={<HotelProfile />} />
+          <Route path="hoteler-payments" element={<HotelerPayments />} />
+        </Route>
+
+
+
+
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="hoteliers" element={<HotelierManagement />} />
+          <Route path="hotels" element={<HotelListings />} />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="analytics" element={<AdminAnalytics />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="adminprofile" element={<AdminProfile />} />
+
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+
+
 }
 
 export default App;

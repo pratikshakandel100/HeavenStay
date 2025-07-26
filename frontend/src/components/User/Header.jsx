@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, User, Calendar, Mountain } from 'lucide-react';
+import MyBookings from '../../pages/User/UserSide/MyBooking';
 
 const Header = ({ user }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,6 +17,12 @@ const Header = ({ user }) => {
     setIsMenuOpen(false);
     setIsProfileDropdownOpen(false);
   };
+  const defaultUser = {
+  name: 'Guest User',
+  email: 'guest@example.com',
+  phone: 'N/A',
+  avatar: '/default-avatar.png', // Add a real default image if needed
+};
 
   return (
     <header className="bg-[#2F5249] text-white shadow-lg">
@@ -29,9 +36,9 @@ const Header = ({ user }) => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="hover:text-[#97B067] transition-colors">Hotels</Link>
-            <Link to="/my-bookings" className="hover:text-[#97B067] transition-colors">My Bookings</Link>
-            <Link to="/profile" className="hover:text-[#97B067] transition-colors">Profile</Link>
+            <Link to="/users/Hotels" className="hover:text-[#97B067] transition-colors">Hotels</Link>
+            <Link to="/users/mybookings" className="hover:text-[#97B067] transition-colors">MyBookings</Link>
+            <Link to="/users/profile" className="hover:text-[#97B067] transition-colors">Profile</Link>
           </nav>
 
           {/* User Profile */}
@@ -75,7 +82,7 @@ const Header = ({ user }) => {
                       <span>View Profile</span>
                     </button>
                     <button
-                      onClick={() => handleNavigation('/my-bookings')}
+                      onClick={() => handleNavigation('/mybookings')}
                       className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2"
                     >
                       <Calendar size={16} />
@@ -117,7 +124,7 @@ const Header = ({ user }) => {
                 Hotels
               </button>
               <button 
-                onClick={() => handleNavigation('/my-bookings')}
+                onClick={() => handleNavigation('/mybookings')}
                 className="text-left p-2 hover:bg-[#437057] rounded transition-colors"
               >
                 My Bookings

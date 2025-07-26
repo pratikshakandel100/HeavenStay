@@ -44,7 +44,7 @@ const Header = ({ setSidebarOpen, sidebarOpen }) => {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 right-0 left-0 lg:left-64 z-30 h-16">
+    <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 right-0 left-0 lg:left-58 z-30 h-16">
       <div className="flex items-center justify-between px-4 lg:px-6 h-full">
         <div className="flex items-center">
           <button

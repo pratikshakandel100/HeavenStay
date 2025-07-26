@@ -8,16 +8,16 @@ const MainLayout = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <div className='flex'>
+        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      <div className="lg:ml-64 flex flex-col min-h-screen">
-        <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-        {/* main already has pt-16 to offset the fixed header */}
-        <main className="flex-1 pt-16 overflow-y-auto">
-          {/* remove extra padding here */}
-          <Outlet />
-        </main>
+        <div className="flex flex-col">
+          <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+          <div className='flex justify-center w-[1100px] mt-18'>
+    <Outlet />
+          </div>
+      
+        </div>
       </div>
     </div>
   );
