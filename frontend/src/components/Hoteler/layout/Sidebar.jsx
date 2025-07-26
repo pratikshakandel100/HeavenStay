@@ -17,14 +17,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/dashboard' },
-    { id: 'rooms', label: 'Rooms', icon: Building, path: '/rooms' },
-    { id: 'bookings', label: 'Bookings', icon: Calendar, path: '/bookings' },
-    { id: 'messages', label: 'Messages', icon: MessageSquare, path: '/messages' },
-    { id: 'reviews', label: 'Reviews', icon: Star, path: '/reviews' },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/analytics' },
-    { id: 'hotel-profile', label: 'Hotel Profile', icon: Hotel, path: '/hotel-profile' },
-    { id: 'payments', label: 'Payments', icon: CreditCard, path: '/payments' },
+    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/hoteler/dashboard' },
+    { id: 'rooms', label: 'Rooms', icon: Building, path: '/hoteler/rooms' },
+    { id: 'bookings', label: 'Bookings', icon: Calendar, path: '/hoteler/bookings' },
+    { id: 'messages', label: 'Messages', icon: MessageSquare, path: '/hoteler/messages' },
+    { id: 'reviews', label: 'Reviews', icon: Star, path: '/hoteler/reviews' },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/hoteler/analytics' },
+    { id: 'hotel-profile', label: 'Hotel Profile', icon: Hotel, path: '/hoteler/hotel-profile' },
+    { id: 'payments', label: 'Payments', icon: CreditCard, path: '/hoteler/payments' },
   ];
 
   const handleNavigation = (path) => {

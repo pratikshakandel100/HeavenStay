@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Mail, Lock, Eye, EyeOff, User, Phone, ArrowLeft, Building } from 'lucide-react';
 
 const Signup = ({ onBack }) => {
@@ -9,9 +10,8 @@ const Signup = ({ onBack }) => {
     phone: '',
     password: '',
     confirmPassword: '',
-    userType: 'user',
+    userType: 'user', // 'user' or 'hotel_owner'
     agreeToTerms: false,
-    subscribeNewsletter: false,
     hotelName: '',
     hotelAddress: ''
   });
@@ -20,6 +20,8 @@ const Signup = ({ onBack }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [submitError, setSubmitError] = useState('');
+  const [submitSuccess, setSubmitSuccess] = useState('');
 
   const userTypes = [
     { value: 'user', label: 'Guest/User', icon: User },
@@ -53,6 +55,9 @@ const Signup = ({ onBack }) => {
         [name]: ''
       }));
     }
+
+    setSubmitError('');
+    setSubmitSuccess('');
   };
 
   const validateForm = () => {
@@ -89,7 +94,6 @@ const Signup = ({ onBack }) => {
       newErrors.agreeToTerms = 'You must agree to the terms and conditions';
     }
 
-    // Hotel owner specific fields
     if (formData.userType === 'hotel_owner') {
       if (!formData.hotelName.trim()) newErrors.hotelName = 'Hotel name is required';
       if (!formData.hotelAddress.trim()) newErrors.hotelAddress = 'Hotel address is required';
@@ -97,13 +101,6 @@ const Signup = ({ onBack }) => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      console.log('Signup data:', formData);
-    }
   };
 
   const getPasswordStrengthColor = (strength) => {
@@ -118,12 +115,74 @@ const Signup = ({ onBack }) => {
     return 'Strong';
   };
 
+  // New: Axios POST on submit
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitError('');
+    setSubmitSuccess('');
+
+    if (!validateForm()) return;
+
+    // Prepare data to send to backend
+    const dataToSend = {
+      role: formData.userType === 'user' ? 'guest' : 'owner',
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      phone: formData.phone,
+      password: formData.password,
+      hotelName: formData.userType === 'hotel_owner' ? formData.hotelName : undefined,
+      hotelAddress: formData.userType === 'hotel_owner' ? formData.hotelAddress : undefined
+    };
+
+    // Choose API endpoint based on userType
+    const url = formData.userType === 'user'
+      ? 'http://localhost:3001/api/auth/guest/register'
+      : 'http://localhost:3001/api/auth/owner/register';
+
+    try {
+      const res = await axios.post(url, dataToSend);
+
+      if (res.status === 201) {
+        setSubmitSuccess('Registration successful! Please login.');
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+          password: '',
+          confirmPassword: '',
+          userType: formData.userType,
+          agreeToTerms: false,
+          hotelName: '',
+          hotelAddress: ''
+        });
+        setPasswordStrength(0);
+        setErrors({});
+      }
+    } catch (error) {
+      // Backend might return validation errors or simple error messages
+      if (error.response?.data?.errors) {
+        // Express-validator style errors
+        const backendErrors = {};
+        error.response.data.errors.forEach(err => {
+          backendErrors[err.param] = err.msg;
+        });
+        setErrors(backendErrors);
+      } else if (error.response?.data?.error) {
+        setSubmitError(error.response.data.error);
+      } else {
+        setSubmitError('Registration failed, please try again later.');
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-100 to-green-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
         <div className="bg-gradient-to-r from-green-600 to-yellow-400 p-8 text-white text-center relative">
           {onBack && (
-            <button 
+            <button
               onClick={onBack}
               className="absolute left-4 top-4 p-2 rounded-full bg-white/20 hover:bg-white/30"
             >
@@ -284,17 +343,13 @@ const Signup = ({ onBack }) => {
             {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword}</p>}
           </div>
 
-          {/* Terms & Newsletter */}
+          {/* Terms & Conditions */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" name="agreeToTerms" checked={formData.agreeToTerms} onChange={handleChange} />
               I agree to the Terms & Conditions
             </label>
             {errors.agreeToTerms && <p className="text-sm text-red-500">{errors.agreeToTerms}</p>}
-            {/* <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" name="subscribeNewsletter" checked={formData.subscribeNewsletter} onChange={handleChange} />
-              Subscribe to newsletter
-            </label> */}
           </div>
 
           <button
@@ -303,6 +358,9 @@ const Signup = ({ onBack }) => {
           >
             Create Account
           </button>
+
+          {submitError && <p className="text-center text-red-500 mt-3">{submitError}</p>}
+          {submitSuccess && <p className="text-center text-green-600 mt-3">{submitSuccess}</p>}
 
           <p className="text-center text-sm mt-4 text-gray-600">
             Already have an account? <a href="#" className="text-green-600 font-medium">Sign in here</a>
