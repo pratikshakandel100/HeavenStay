@@ -54,7 +54,7 @@ const ReviewsComponent = () => {
 
     // In a real app, this would submit to an API
     alert('Review submitted successfully!');
-    navigate('/my-bookings');
+    navigate('/mybookings');
   };
 
   const reviewAspects = [
@@ -225,7 +225,7 @@ const ReviewsComponent = () => {
           <div className="flex justify-end space-x-4">
             <button
               type="button"
-              onClick={() => navigate('/my-bookings')}
+              onClick={() => navigate('/mybookings')}
               className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Skip for Now

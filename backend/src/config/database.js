@@ -11,7 +11,7 @@ export const sequelize = new Sequelize(
   db_password,
   {
     host: db_host,// use .env port if not default
-    dialect: db_user,       // you can change to 'mysql', etc.
+    dialect: 'postgres',      // you can change to 'mysql', etc.
     logging: false,            // set true if you want to see SQL queries in console
   }
 );

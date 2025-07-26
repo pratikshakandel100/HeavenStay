@@ -205,7 +205,7 @@ const Login = ({ onBack }) => {
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
 
-          {/* Social Login */}
+          {/* Social Login
           <div className="mt-6 space-y-3">
             <button className="w-full border border-gray-300 text-[#2F5249] py-3 px-4 rounded-lg font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#437057] transition-colors flex items-center justify-center space-x-2">
               <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" className="h-5 w-5" />
@@ -214,7 +214,7 @@ const Login = ({ onBack }) => {
             <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors flex items-center justify-center space-x-2">
               <span>Continue with Facebook</span>
             </button>
-          </div>
+          </div> */}
 
           {/* Sign Up Link */}
           <p className="mt-8 text-center text-sm text-[#2F5249]">

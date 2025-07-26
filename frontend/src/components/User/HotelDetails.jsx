@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Star, MapPin, Wifi, Car, Coffee, Users, Phone, Mail, ArrowLeft, Heart } from 'lucide-react';
+import {
+  Star, MapPin, Wifi, Car, Coffee, Users,
+  Phone, Mail, ArrowLeft, Heart
+} from 'lucide-react';
 
 const HotelDetailsComponent = () => {
   const { id } = useParams();
@@ -8,7 +11,6 @@ const HotelDetailsComponent = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isFavorited, setIsFavorited] = useState(false);
 
-  // Mock hotel data - in real app, fetch by ID
   const hotel = {
     id: '1',
     name: 'Himalayan Grand Hotel',
@@ -77,44 +79,37 @@ const HotelDetailsComponent = () => {
 
   const getAmenityIcon = (amenity) => {
     switch (amenity.toLowerCase()) {
-      case 'wifi':
-        return <Wifi size={20} />;
-      case 'parking':
-        return <Car size={20} />;
-      case 'restaurant':
-        return <Coffee size={20} />;
-      case 'gym':
-        return <Users size={20} />;
-      default:
-        return <div className="w-5 h-5 bg-[#97B067] rounded-full"></div>;
+      case 'wifi': return <Wifi size={20} />;
+      case 'parking': return <Car size={20} />;
+      case 'restaurant': return <Coffee size={20} />;
+      case 'gym': return <Users size={20} />;
+      default: return <div className="w-5 h-5 bg-[#97B067] rounded-full"></div>;
     }
   };
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Header */}
+      {/* Back Button + Favorite */}
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center space-x-2 text-[#437057] hover:text-[#2F5249] transition-colors"
+          className="flex items-center space-x-2 text-[#437057] hover:text-[#2F5249]"
         >
           <ArrowLeft size={20} />
           <span>Back to Hotels</span>
         </button>
         <button
           onClick={() => setIsFavorited(!isFavorited)}
-          className={`p-2 rounded-full transition-colors ${
-            isFavorited ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'
-          }`}
+          className={`p-2 rounded-full ${isFavorited ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'}`}
         >
           <Heart size={20} fill={isFavorited ? 'currentColor' : 'none'} />
         </button>
       </div>
 
-      {/* Hotel Info Header */}
+      {/* Header Section */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
         <div className="p-6 border-b border-gray-200">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col md:flex-row md:justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{hotel.name}</h1>
               <div className="flex items-center space-x-4 text-gray-600">
@@ -157,11 +152,7 @@ const HotelDetailsComponent = () => {
                     index === selectedImageIndex ? 'border-white' : 'border-transparent opacity-70'
                   }`}
                 >
-                  <img
-                    src={image}
-                    alt={`View ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={image} alt={`View ${index + 1}`} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
@@ -170,9 +161,9 @@ const HotelDetailsComponent = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content */}
+        {/* Left Panel */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Description */}
+          {/* About */}
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">About This Hotel</h2>
             <p className="text-gray-700 leading-relaxed">{hotel.description}</p>
@@ -184,9 +175,7 @@ const HotelDetailsComponent = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {hotel.amenities.map((amenity, index) => (
                 <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="text-[#437057]">
-                    {getAmenityIcon(amenity)}
-                  </div>
+                  <div className="text-[#437057]">{getAmenityIcon(amenity)}</div>
                   <span className="text-gray-700">{amenity}</span>
                 </div>
               ))}
@@ -252,11 +241,7 @@ const HotelDetailsComponent = () => {
               {reviews.map((review) => (
                 <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
                   <div className="flex items-start space-x-4">
-                    <img
-                      src={review.avatar}
-                      alt={review.user}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
+                    <img src={review.avatar} alt={review.user} className="w-12 h-12 rounded-full object-cover" />
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-semibold text-gray-900">{review.user}</h3>
@@ -266,9 +251,7 @@ const HotelDetailsComponent = () => {
                               <Star
                                 key={i}
                                 size={16}
-                                className={`${
-                                  i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                                }`}
+                                className={i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}
                               />
                             ))}
                           </div>
@@ -286,7 +269,6 @@ const HotelDetailsComponent = () => {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Book Now Card */}
           <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-8">
             <div className="text-center mb-6">
               <div className="text-3xl font-bold text-[#2F5249] mb-2">
@@ -302,7 +284,6 @@ const HotelDetailsComponent = () => {
             </button>
           </div>
 
-          {/* Contact Info */}
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <h3 className="text-xl font-bold text-gray-900 mb-4">Contact Information</h3>
             <div className="space-y-3">

@@ -2,29 +2,26 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Home, 
+  Users, 
   Building, 
-  Calendar, 
-  MessageSquare, 
-  Star, 
-  BarChart3, 
   Hotel, 
-  CreditCard,
-  X
+  BarChart3, 
+  Settings,
+  X,
+  Shield
 } from 'lucide-react';
 
-const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
+const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/dashboard' },
-    { id: 'rooms', label: 'Rooms', icon: Building, path: '/rooms' },
-    { id: 'bookings', label: 'Bookings', icon: Calendar, path: '/bookings' },
-    { id: 'messages', label: 'Messages', icon: MessageSquare, path: '/messages' },
-    { id: 'reviews', label: 'Reviews', icon: Star, path: '/reviews' },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/analytics' },
-    { id: 'hotel-profile', label: 'Hotel Profile', icon: Hotel, path: '/hotel-profile' },
-    { id: 'payments', label: 'Payments', icon: CreditCard, path: '/payments' },
+    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/admin/dashboard' },
+    { id: 'users', label: 'User Management', icon: Users, path: '/admin/users' },
+    { id: 'hoteliers', label: 'Hotelier Management', icon: Building, path: '/admin/hoteliers' },
+    { id: 'hotels', label: 'Hotel Listings', icon: Hotel, path: '/admin/hotels' },
+    { id: 'analytics', label: 'Analytics & Reports', icon: BarChart3, path: '/admin/analytics' },
+    { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
   ];
 
   const handleNavigation = (path) => {
@@ -43,15 +40,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       )}
       
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 transform ${
+      <div className={` fixed top-0 left-0 h-full w-64 bg-white border-r z-20 border transform ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       } transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
+
         <div className="flex h-full flex-col" style={{ backgroundColor: '#2F5249' }}>
+
           {/* Logo */}
           <div className="flex items-center justify-between px-6 py-4 h-16">
             <div className="flex items-center">
-              <Building className="h-8 w-8 text-white" />
-              <span className="ml-2 text-xl font-bold text-white">HevenStay</span>
+              <Shield className="h-8 w-8 text-white" />
+              <span className="ml-2 text-xl font-bold text-white">Admin Panel</span>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -67,7 +66,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path || 
-                  (location.pathname === '/' && item.path === '/dashboard');
+                  (location.pathname === '/admin' && item.path === '/admin/dashboard');
                 
                 return (
                   <li key={item.id}>
@@ -75,8 +74,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                       onClick={() => handleNavigation(item.path)}
                       className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                         isActive
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-300 hover:text-white hover:bg-white hover:bg-opacity-10'
+                          ? 'bg-white text-orange-900 shadow-sm'
+                          : 'text-gray-300 hover:text-black hover:bg-white hover:bg-opacity-300'
                       }`}
                     >
                       <Icon className="h-5 w-5 mr-3 flex-shrink-0" />
@@ -88,15 +87,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
             </ul>
           </nav>
 
-          {/* User profile */}
+          {/* Admin profile */}
           <div className="px-6 py-4 border-t border-gray-600">
             <div className="flex items-center">
               <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                <Hotel className="h-6 w-6 text-gray-600" />
+                <Shield className="h-6 w-6 text-gray-600" />
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-white">Grand Paradise Resort</p>
-                <p className="text-xs text-gray-300">Hotel Manager</p>
+                <p className="text-sm font-medium text-white">Admin User</p>
+                <p className="text-xs text-gray-300">System Administrator</p>
               </div>
             </div>
           </div>
@@ -106,4 +105,4 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   );
 };
 
-export default Sidebar;
+export default AdminSidebar;

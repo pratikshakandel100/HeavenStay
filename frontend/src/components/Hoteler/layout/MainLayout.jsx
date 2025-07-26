@@ -7,21 +7,17 @@ const MainLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar 
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-      />
+    <div className="min-h-screen bg-gray-50">
+      <div className='flex'>
+        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+
+        <div className="flex flex-col">
+          <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+          <div className='flex justify-center w-[1100px] mt-18'>
+    <Outlet />
+          </div>
       
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header 
-          setSidebarOpen={setSidebarOpen}
-          sidebarOpen={sidebarOpen}
-        />
-        
-        <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6">
-          <Outlet />
-        </main>
+        </div>
       </div>
     </div>
   );
