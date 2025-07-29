@@ -139,7 +139,7 @@ const Signup = ({ onBack }) => {
     const url = formData.userType === 'user'
       ? 'http://localhost:3001/api/auth/guest/register'
       : 'http://localhost:3001/api/auth/owner/register';
-
+ 
     try {
       const res = await axios.post(url, dataToSend);
 
