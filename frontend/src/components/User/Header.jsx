@@ -36,7 +36,7 @@ const Header = ({ user }) => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/users/Hotels" className="hover:text-[#97B067] transition-colors">Hotels</Link>
+            <Link to="/users/hotel-listing" className="hover:text-[#97B067] transition-colors">Hotels</Link>
             <Link to="/users/mybookings" className="hover:text-[#97B067] transition-colors">MyBookings</Link>
             <Link to="/users/profile" className="hover:text-[#97B067] transition-colors">Profile</Link>
           </nav>
@@ -74,13 +74,21 @@ const Header = ({ user }) => {
                     </div>
                   </div>
                   <div className="py-2">
-                    <button
+                    {/* <button
                       onClick={() => handleNavigation('/profile')}
                       className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2"
                     >
                       <User size={16} />
                       <span>View Profile</span>
-                    </button>
+                    </button> */}
+                    <button
+  onClick={() => handleNavigation('/reset-password')}
+  className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2"
+>
+  <User size={16} />
+  <span>Reset Password</span>
+</button>
+
                     <button
                       onClick={() => handleNavigation('/mybookings')}
                       className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2"

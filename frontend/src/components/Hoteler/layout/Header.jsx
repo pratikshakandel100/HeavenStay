@@ -146,7 +146,7 @@ const Header = ({ setSidebarOpen, sidebarOpen }) => {
                 <div className="p-2">
                   <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
                     <User className="h-4 w-4 mr-2" />
-                    My Profile
+                    Reset Password
                   </button>
                   <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg flex items-center">
                     <Settings className="h-4 w-4 mr-2" />

@@ -4,23 +4,20 @@ import {
   Mail,
   Phone,
   Save,
-  Eye,
-  EyeOff,
-  Camera
+  Camera,
+  MapPin,
+  Flag
 } from 'lucide-react';
 
 const ProfileComponent = ({ user, setUser }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     name: user.name,
     email: user.email,
     phone: user.phone,
-    nationality: 'Nepal',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    address: user.address || '',
+    nationality: user.nationality || 'Nepal',
   });
 
   const handleInputChange = (e) => {
@@ -34,16 +31,9 @@ const ProfileComponent = ({ user, setUser }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
-      alert('Passwords do not match!');
-      return;
-    }
-
     setUser((prev) => ({
       ...prev,
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone
+      ...formData
     }));
 
     setIsEditing(false);
@@ -137,40 +127,39 @@ const ProfileComponent = ({ user, setUser }) => {
           </div>
         </div>
 
-        {/* Password fields */}
-        {isEditing && (
-          <>
-            <div>
-              <label className="block text-[#2f5249] font-semibold">New Password</label>
-              <div className="flex items-center border rounded px-3">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="newPassword"
-                  className="w-full px-2 py-2 outline-none"
-                  placeholder="New Password"
-                  value={formData.newPassword}
-                  onChange={handleInputChange}
-                />
-                <button type="button" onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <EyeOff className="w-5 h-5 text-[#2f5249]" /> : <Eye className="w-5 h-5 text-[#2f5249]" />}
-                </button>
-              </div>
-            </div>
+        {/* Address */}
+        <div>
+          <label className="block text-[#2f5249] font-semibold">Address</label>
+          <div className="flex items-center border rounded px-3">
+            <MapPin className="w-5 h-5 text-[#2f5249]" />
+            <input
+              type="text"
+              name="address"
+              className="w-full px-2 py-2 outline-none"
+              value={formData.address}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+            />
+          </div>
+        </div>
 
-            <div>
-              <label className="block text-[#2f5249] font-semibold">Confirm Password</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                className="w-full border px-3 py-2 rounded outline-none"
-                placeholder="Confirm Password"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-              />
-            </div>
-          </>
-        )}
+        {/* Nationality */}
+        <div>
+          <label className="block text-[#2f5249] font-semibold">Nationality</label>
+          <div className="flex items-center border rounded px-3">
+            <Flag className="w-5 h-5 text-[#2f5249]" />
+            <input
+              type="text"
+              name="nationality"
+              className="w-full px-2 py-2 outline-none"
+              value={formData.nationality}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+            />
+          </div>
+        </div>
 
+        {/* Buttons */}
         <div className="flex justify-between items-center pt-4">
           <button
             type="button"

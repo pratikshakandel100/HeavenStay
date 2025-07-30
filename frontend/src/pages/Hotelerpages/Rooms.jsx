@@ -12,8 +12,8 @@ const Rooms = () => {
       price: 3500,
       capacity: 2,
       amenities: ['WiFi', 'AC', 'TV', 'Private Bathroom'],
-      available: 15,
-      total: 20,
+      // available: 15,
+      // total: 20,
       description: 'Comfortable standard room with essential amenities',
       images: ['https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&cs=tinysrgb&w=400']
     },
@@ -23,8 +23,8 @@ const Rooms = () => {
       price: 5500,
       capacity: 3,
       amenities: ['WiFi', 'AC', 'TV', 'Mini Bar', 'Balcony', 'Room Service'],
-      available: 8,
-      total: 15,
+      // available: 8,
+      // total: 15,
       description: 'Spacious deluxe room with premium amenities and city view',
       images: ['https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=400']
     },
@@ -34,8 +34,8 @@ const Rooms = () => {
       price: 12000,
       capacity: 4,
       amenities: ['WiFi', 'AC', 'TV', 'Mini Bar', 'Balcony', 'Room Service', 'Living Area', 'Kitchenette'],
-      available: 3,
-      total: 8,
+      // available: 3,
+      // total: 8,
       description: 'Luxurious suite with separate living area and premium facilities',
       images: ['https://images.pexels.com/photos/1743229/pexels-photo-1743229.jpeg?auto=compress&cs=tinysrgb&w=400']
     },
@@ -45,8 +45,8 @@ const Rooms = () => {
       price: 25000,
       capacity: 6,
       amenities: ['WiFi', 'AC', 'TV', 'Mini Bar', 'Balcony', 'Room Service', 'Living Area', 'Kitchenette', 'Jacuzzi', 'Butler Service'],
-      available: 1,
-      total: 2,
+      // available: 1,
+      // total: 2,
       description: 'Ultimate luxury suite with exclusive amenities and panoramic views',
       images: ['https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg?auto=compress&cs=tinysrgb&w=400']
     }
@@ -124,7 +124,7 @@ const Rooms = () => {
               />
               <div className="absolute top-3 right-3">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getAvailabilityColor(room.available, room.total)} bg-white`}>
-                  {room.available}/{room.total} available
+                  {/* {room.available}/{room.total} available */}
                 </span>
               </div>
             </div>

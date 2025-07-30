@@ -1,86 +1,106 @@
-// /*
-// step 1 : import model/user.js
-// step 2: function registerController
-// step 3: body bata data ligne
-// step 4: validate garne
-// step 5: email check if exits or not 
-// step 6: password encrypt
-// step 7: insert database 
-// step 8: response
-// ;*/
+import User from '../models/User.js';
+import { validationResult } from 'express-validator';
+import { hashPassword } from '../utils/hashedPassword.js';
+import bcrypt from 'bcryptjs'; 
+import jwt from 'jsonwebtoken';
 
-import User from "../models/User.js";
-import bcrypt from "bcryptjs";
-export const registerC = async (req, res) => {
-    try{
-   const {firstName, lastName, country, email, password, phoneNumber,dateOfBirth} = req.body;
+// Register
+export const register = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-   if(!firstName||!lastName||!country||!email||!password||!phoneNumber||!dateOfBirth){
-    return res.json({message: "All field must be filled", success: false});
-   }
+  const { role, firstName, lastName, email, phone, password, hotelName, hotelAddress } = req.body;
 
-   const isEmailExist = await User.findOne({
-    where:{
-        email:email,
-    }
-   })
-   if(isEmailExist){
-    return res.json({message: "Email already Exist", success: false});
-   }
+  try {
+    const existing = await User.findOne({ where: { email } });
+    if (existing) return res.status(400).json({ error: 'Email already registered' });
 
-   const hashedPassword = bcrypt.hash(password,20)
+    const hashed = await hashPassword(password);
+    const user = await User.create({
+      role,
+      firstName,
+      lastName,
+      email,
+      phone,
+      password: hashed,
+      hotelName: role === 'owner' ? hotelName : null,
+      hotelAddress: role === 'owner' ? hotelAddress : null
+    });
 
-   await User.create({
-    firstName:firstName,
-    lastName:lastName,
-    country: country,
-    email: email,
-    password:hashedPassword,
-    phoneNumber: phoneNumber,
-    dateOfBirth:dateOfBirth
-   })
-   return res.json({message:"Register Successfull", success: true})
-} catch(error){
-    return res.json({
-        message:error,
-        success: false
-    })
-}
-}
+    res.status(201).json({ message: 'Registered successfully', user });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
- /*
-import model
-email and password bogy bata ligne
-validate email and password
-database ma email search garera users ko whole data ligne
-database ma vako email and password lai user le deko emailand password check garne
-res sent garna
-*/
 
-export const loginC = async(req,res) => {
-    try {
-        const {email, password} = req.body;
-        if(!email || !password){
-            return res.json({message: "Both field must be filled", success:false});
-        }
+//login for guest
 
-        const userDetails = await User.findOne({
-            where:{
-                email: email
-            }
-        })
-        if(!userDetails){
-            return res.json({message: "You are not register yet", success: false})
-        }
+export const loginGuest = async (req, res) => {
+  const { email, password } = req.body;
 
-        const hashedP = await bcrypt.compare(password, userDetails.password);
+  if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
 
-        if(!hashedP){
-            return res.json({message: "Login failed", success:false});
-        }
+  try {
+    const user = await User.findOne({ where: { email, role: 'guest' } });
+    if (!user) return res.status(404).json({ error: 'Guest not found' });
 
-        return res.json({message: "Login Successfull", success: true});
-    } catch (error) {
-        return res.json({message: error, success:false});
-    }
-}
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ error: 'Incorrect password' });
+
+    // 🔐 Generate token
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN
+    });
+
+    res.status(200).json({
+      message: 'Guest login successful',
+      token,
+      user: {
+        id: user.id,
+        role: user.role,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+
+
+//login for hotelOwner
+export const loginHotelOwner= async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
+
+  try {
+    const user = await User.findOne({ where: { email, role: 'owner' } });
+    if (!user) return res.status(404).json({ error: 'Owner not found' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ error: 'Incorrect password' });
+
+    // 🔐 Generate token
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN
+    });
+
+    res.status(200).json({
+      message: 'Guest login successful',
+      token,
+      user: {
+        id: user.id,
+        role: user.role,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};

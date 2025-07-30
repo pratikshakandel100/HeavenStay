@@ -224,7 +224,7 @@ const Bookings = () => {
                             size="sm"
                             className="bg-green-600 hover:bg-green-700"
                           >
-                            Check In
+                            Check Out
                           </Button>
                         )}
                         {booking.status === 'Checked-in' && (
@@ -317,7 +317,7 @@ const Bookings = () => {
                     className="bg-green-600 hover:bg-green-700 flex-1"
                   >
                     <CheckCircle className="h-4 w-4 mr-2" />
-                    Check In
+                    Check Out
                   </Button>
                 )}
                 {booking.status === 'Checked-in' && (

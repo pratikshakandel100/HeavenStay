@@ -20,7 +20,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/hoteler/dashboard' },
     { id: 'rooms', label: 'Rooms', icon: Building, path: '/hoteler/rooms' },
     { id: 'bookings', label: 'Bookings', icon: Calendar, path: '/hoteler/bookings' },
-    { id: 'messages', label: 'Messages', icon: MessageSquare, path: '/hoteler/messages' },
+    // { id: 'messages', label: 'Messages', icon: MessageSquare, path: '/hoteler/messages' },
     { id: 'reviews', label: 'Reviews', icon: Star, path: '/hoteler/reviews' },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/hoteler/analytics' },
     { id: 'hotel-profile', label: 'Hotel Profile', icon: Hotel, path: '/hoteler/hotel-profile' },

@@ -1,12 +1,25 @@
 import express from 'express';
-import {registerC, loginC} from '../controllers/authController.js'
+import { register } from '../controllers/authController.js';
+import { userValidationRules } from '../middleware/validate.js';
 
-const authRouter = express.Router();
+import { loginGuest, loginHotelOwner } from '../controllers/authController.js';
+import {restrictTo, protect} from '../middleware/protect.js';
 
-// ONLY ONE ROUTE - Register new user
-authRouter.post('/register',registerC)
 
-authRouter.post("/login", loginC);
+const router = express.Router();
 
-export default authRouter;
+router.post('/guest/register', userValidationRules('guest'), register);
+router.post('/owner/register', userValidationRules('owner'), register);
 
+router.post('/guest/login', loginGuest);
+router.post('/owner/login', loginHotelOwner);
+
+router.get('/guest-only', protect, restrictTo('guest'), (req, res) => {
+  res.json({ message: `Welcome, guest ${req.user.firstName}` });
+});
+
+router.get('/owner-only', protect, restrictTo('owner'), (req, res) => {
+  res.json({ message: `Welcome, hotel owner ${req.user.firstName}` });
+});
+
+export default router;

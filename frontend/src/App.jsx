@@ -22,7 +22,7 @@ import Reviews from './pages/User/UserSide/Reviews.jsx';
 import Rooms from './pages/Hotelerpages/Rooms.jsx';
 import UserLayout from './components/User/userlayout.jsx';
 // import HotelDetails from './pages/User/UserSide/HotelDetails.jsx';
-
+import ResetPasswordComponent from './components/User/ResetPassword.jsx';
 
 
 
@@ -37,9 +37,9 @@ import HotelerReviews from './pages/Hotelerpages/HotelerReviews.jsx';
 import Analytics from './pages/Hotelerpages/Analytics.jsx';
 import HotelProfile from './pages/Hotelerpages/HotelerProfile.jsx';
 import HotelerPayments from './pages/Hotelerpages/HotelerPayments.jsx';
+import HotelListOnlyComponent from './pages/User/UserSide/HotelListingOnly.jsx';
 
-
-
+import PaymentPage from './pages/Hotelerpages/Payments.jsx';
 
 
 //Admin
@@ -79,10 +79,12 @@ function App() {
           <Route path="hotel/:id" element={<HotelDetails />} />
           <Route path="book/:id" element={<BookingForm />} />
           <Route path="mybookings" element={<MyBookings />} />
-          <Route path="hotels" element={<HotelDetails />} />
+          <Route path="hotel-listing" element={<HotelListOnlyComponent />} />
           <Route path="profile" element={<Profile user={user} setUser={setUser} />} />
           <Route path="payment/:bookingId" element={<Payment />} />
           <Route path="reviews/:bookingId" element={<Reviews />} />
+          <Route path = "reset-password" element = {<ResetPasswordComponent/>}/>
+          
         </Route>
 
         {/* Hoteler Routes */}
@@ -96,7 +98,7 @@ function App() {
           <Route path="analytics" element={<Analytics />} />
         
           <Route path="hotel-profile" element={<HotelProfile />} />
-          <Route path="hoteler-payments" element={<HotelerPayments />} />
+          <Route path="payments" element={<HotelerPayments />} />
         </Route>
 
 

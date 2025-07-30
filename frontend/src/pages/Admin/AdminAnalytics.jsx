@@ -43,13 +43,13 @@ const AdminAnalytics = () => {
       icon: DollarSign,
       color: '#437057'
     },
-    {
-      title: 'Growth Rate',
-      value: '15.8%',
-      change: '+3.2%',
-      icon: TrendingUp,
-      color: '#2F5249'
-    }
+    // {
+    //   title: 'Growth Rate',
+    //   value: '15.8%',
+    //   change: '+3.2%',
+    //   icon: TrendingUp,
+    //   color: '#2F5249'
+    // }
   ];
 
   const monthlyData = [

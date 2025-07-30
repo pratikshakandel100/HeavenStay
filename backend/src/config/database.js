@@ -4,6 +4,7 @@ import { db_host, db_name, db_password, db_user } from '../utils/constant.js';
 
 dotenv.config();
 
+// console.log(typeof process.env.DB_PASSWORD, process.env.DB_PASSWORD);
 
 export const sequelize = new Sequelize(
   db_name,

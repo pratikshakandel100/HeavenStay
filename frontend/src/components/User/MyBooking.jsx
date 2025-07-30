@@ -6,6 +6,19 @@ const MyBookingsComponent = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('upcoming');
 
+
+
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
+const [reviewText, setReviewText] = useState('');
+const [rating, setRating] = useState(0);
+
+
+const [rescheduleBookingId, setRescheduleBookingId] = useState(null);
+const [newCheckIn, setNewCheckIn] = useState('');
+const [newCheckOut, setNewCheckOut] = useState('');
+
+
+
   const bookings = [
     {
       id: 'BK001',
@@ -66,13 +79,17 @@ const MyBookingsComponent = () => {
     }
   };
 
-  const handleReschedule = (bookingId) => {
-    alert('Reschedule functionality would be implemented here');
-  };
+  // const handleReschedule = (bookingId) => {
+  //   alert('Reschedule functionality would be implemented here');
+  // };
 
-  const handleLeaveReview = (bookingId) => {
-    navigate(`/reviews/${bookingId}`);
-  };
+  const handleReschedule = (bookingId) => {
+  setRescheduleBookingId(bookingId);
+};
+
+ const handleLeaveReview = (bookingId) => {
+  setSelectedBookingId(bookingId);
+};
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -250,6 +267,105 @@ const MyBookingsComponent = () => {
           ))
         )}
       </div>
+      {selectedBookingId && (
+   <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+
+    <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg relative">
+      <button
+        onClick={() => setSelectedBookingId(null)}
+        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+      >
+        <X size={20} />
+      </button>
+      <h2 className="text-xl font-semibold mb-4">Leave a Review</h2>
+      <div className="mb-4">
+        <label className="block mb-1 text-sm font-medium">Rating:</label>
+        <div className="flex space-x-1">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star
+              key={star}
+              size={24}
+              onClick={() => setRating(star)}
+              className={`cursor-pointer ${
+                rating >= star ? 'text-yellow-400' : 'text-gray-300'
+              }`}
+              fill={rating >= star ? '#facc15' : 'none'}
+            />
+          ))}
+        </div>
+      </div>
+      <div className="mb-4">
+        <label className="block mb-1 text-sm font-medium">Your Review:</label>
+        <textarea
+          className="w-full p-2 border rounded-md text-sm"
+          rows={4}
+          value={reviewText}
+          onChange={(e) => setReviewText(e.target.value)}
+        />
+      </div>
+      <button
+        onClick={() => {
+          alert(`Review submitted!\nRating: ${rating}\nMessage: ${reviewText}`);
+          setSelectedBookingId(null);
+          setRating(0);
+          setReviewText('');
+        }}
+        className="w-full bg-[#2F5249] text-white py-2 rounded-md hover:bg-[#437057]"
+      >
+        Submit Review
+      </button>
+    </div>
+  </div>
+)}
+
+
+{rescheduleBookingId && (
+  <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg relative">
+      <button
+        onClick={() => {
+          setRescheduleBookingId(null);
+          setNewCheckIn('');
+          setNewCheckOut('');
+        }}
+        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+      >
+        <X size={20} />
+      </button>
+      <h2 className="text-xl font-semibold mb-4">Reschedule Booking</h2>
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">New Check-in Date</label>
+        <input
+          type="date"
+          className="w-full border border-gray-300 rounded-md p-2 text-sm"
+          value={newCheckIn}
+          onChange={(e) => setNewCheckIn(e.target.value)}
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">New Check-out Date</label>
+        <input
+          type="date"
+          className="w-full border border-gray-300 rounded-md p-2 text-sm"
+          value={newCheckOut}
+          onChange={(e) => setNewCheckOut(e.target.value)}
+        />
+      </div>
+      <button
+        onClick={() => {
+          alert(`Booking rescheduled to:\nCheck-in: ${newCheckIn}\nCheck-out: ${newCheckOut}`);
+          setRescheduleBookingId(null);
+          setNewCheckIn('');
+          setNewCheckOut('');
+        }}
+        className="w-full bg-[#2F5249] text-white py-2 rounded-md hover:bg-[#437057] transition-colors"
+      >
+        Confirm Reschedule
+      </button>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
