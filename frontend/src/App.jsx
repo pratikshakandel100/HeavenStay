@@ -21,7 +21,7 @@ import Payment from './pages/User/UserSide/Payment.jsx';
 import Reviews from './pages/User/UserSide/Reviews.jsx';
 import Rooms from './pages/Hotelerpages/Rooms.jsx';
 import UserLayout from './components/User/userlayout.jsx';
-// import Hotels from './pages/Hotelerpages/Hotels.jsx';
+// import HotelDetails from './pages/User/UserSide/HotelDetails.jsx';
 
 
 
@@ -79,7 +79,7 @@ function App() {
           <Route path="hotel/:id" element={<HotelDetails />} />
           <Route path="book/:id" element={<BookingForm />} />
           <Route path="mybookings" element={<MyBookings />} />
-          {/* <Route path="hotel" element={<Hotel />} /> */}
+          <Route path="hotels" element={<HotelDetails />} />
           <Route path="profile" element={<Profile user={user} setUser={setUser} />} />
           <Route path="payment/:bookingId" element={<Payment />} />
           <Route path="reviews/:bookingId" element={<Reviews />} />

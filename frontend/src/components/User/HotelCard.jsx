@@ -6,11 +6,11 @@ const HotelCard = ({ hotel }) => {
   const navigate = useNavigate();
 
   const handleViewDetails = () => {
-    navigate(`/hotel/${hotel.id}`);
+    navigate(`/users/hotel/${hotel.id}`);
   };
 
   const handleBookNow = () => {
-    navigate(`/book/${hotel.id}`);
+    navigate(`/users/book/${hotel.id}`);
   };
 
   const getAmenityIcon = (amenity) => {
