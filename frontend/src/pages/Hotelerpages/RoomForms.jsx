@@ -4,10 +4,11 @@ import Button from '../../components/Hoteler/common/Button';
 
 const RoomForm = ({ room, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
+    name: room?.name || '',
     type: room?.type || '',
     price: room?.price || '',
     capacity: room?.capacity || '',
-    total: room?.total || '',
+    totalRooms: room?.totalRooms || '',
     description: room?.description || '',
     amenities: room?.amenities?.join(', ') || '',
     images: room?.images || []
@@ -15,7 +16,12 @@ const RoomForm = ({ room, onSave, onCancel }) => {
 
   const [imageFiles, setImageFiles] = useState([]);
 
-  const roomTypes = ['Standard Room', 'Deluxe Room', 'Suite', 'Presidential Suite'];
+  const roomTypes = [
+    { value: 'standard', label: 'Standard Room' },
+    { value: 'deluxe', label: 'Deluxe Room' },
+    { value: 'suite', label: 'Suite' },
+    { value: 'presidential', label: 'Presidential Suite' }
+  ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -23,9 +29,9 @@ const RoomForm = ({ room, onSave, onCancel }) => {
       ...formData,
       price: parseFloat(formData.price),
       capacity: parseInt(formData.capacity),
-      total: parseInt(formData.total),
+      totalRooms: parseInt(formData.totalRooms),
       amenities: formData.amenities.split(',').map(a => a.trim()).filter(a => a),
-      images: formData.images.length > 0 ? formData.images : ['https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&cs=tinysrgb&w=400']
+      images: imageFiles.length > 0 ? imageFiles : []
     };
     onSave(roomData);
   };
@@ -63,6 +69,20 @@ const RoomForm = ({ room, onSave, onCancel }) => {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
+          Room Name
+        </label>
+        <input
+          type="text"
+          required
+          value={formData.name}
+          onChange={(e) => handleChange('name', e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter room name"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
           Room Type
         </label>
         <select
@@ -73,7 +93,7 @@ const RoomForm = ({ room, onSave, onCancel }) => {
         >
           <option value="">Select room type</option>
           {roomTypes.map((type) => (
-            <option key={type} value={type}>{type}</option>
+            <option key={type.value} value={type.value}>{type.label}</option>
           ))}
         </select>
       </div>
@@ -119,8 +139,8 @@ const RoomForm = ({ room, onSave, onCancel }) => {
           type="number"
           required
           min="1"
-          value={formData.total}
-          onChange={(e) => handleChange('total', e.target.value)}
+          value={formData.totalRooms}
+          onChange={(e) => handleChange('totalRooms', e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="20"
         />

@@ -1,114 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, MoreVertical, Hotel, MapPin, Star, DollarSign, Eye, Edit, Trash2, CheckCircle, XCircle, X } from 'lucide-react';
 import Button from '../../components/Hoteler/common/Button';
 import Modal from '../../components/Hoteler/common/Modal';
+import { getAllHotels, updateHotelStatus, deleteHotel } from '../../services/adminApi';
+import { useToast } from '../../context/ToastContext';
 
 const HotelListings = () => {
-  const [hotels, setHotels] = useState([
-    {
-      id: 1,
-      name: 'Grand Paradise Resort',
-      location: 'Pokhara, Nepal',
-      hotelier: 'John Smith',
-      rating: 4.8,
-      rooms: 45,
-      price: 3500,
-      status: 'Active',
-      image: 'https://images.pexels.com/photos/261102/pexels-photo-261102.jpeg?auto=compress&cs=tinysrgb&w=400',
-      bookings: 156,
-      revenue: 125000,
-      submissionDate: '2024-01-15',
-      description: 'Luxury resort with stunning mountain views and world-class amenities.',
-      amenities: ['WiFi', 'Pool', 'Spa', 'Restaurant', 'Gym', 'Room Service'],
-      contact: {
-        phone: '+977-61-123456',
-        email: 'info@grandparadise.com'
-      },
-      policies: {
-        checkIn: '2:00 PM',
-        checkOut: '12:00 PM',
-        cancellation: 'Free cancellation up to 24 hours before check-in'
-      }
-    },
-    {
-      id: 2,
-      name: 'Mountain View Lodge',
-      location: 'Kathmandu, Nepal',
-      hotelier: 'Sarah Johnson',
-      rating: 4.6,
-      rooms: 32,
-      price: 2800,
-      status: 'Pending',
-      image: 'https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&cs=tinysrgb&w=400',
-      bookings: 0,
-      revenue: 0,
-      submissionDate: '2024-01-20',
-      description: 'Cozy lodge nestled in the heart of the Himalayas.',
-      amenities: ['WiFi', 'Restaurant', 'Parking', 'Heating'],
-      contact: {
-        phone: '+977-1-234567',
-        email: 'info@mountainview.com'
-      },
-      policies: {
-        checkIn: '3:00 PM',
-        checkOut: '11:00 AM',
-        cancellation: 'Free cancellation up to 48 hours before check-in'
-      }
-    },
-    {
-      id: 3,
-      name: 'City Center Hotel',
-      location: 'Kathmandu, Nepal',
-      hotelier: 'Michael Chen',
-      rating: 4.4,
-      rooms: 28,
-      price: 4200,
-      status: 'Active',
-      image: 'https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=400',
-      bookings: 89,
-      revenue: 85000,
-      submissionDate: '2024-01-10',
-      description: 'Modern hotel in the bustling city center with easy access to attractions.',
-      amenities: ['WiFi', 'Business Center', 'Restaurant', 'Laundry', 'Concierge'],
-      contact: {
-        phone: '+977-1-345678',
-        email: 'info@citycenter.com'
-      },
-      policies: {
-        checkIn: '2:00 PM',
-        checkOut: '12:00 PM',
-        cancellation: 'Free cancellation up to 24 hours before check-in'
-      }
-    },
-    {
-      id: 4,
-      name: 'Lakeside Resort',
-      location: 'Pokhara, Nepal',
-      hotelier: 'Emma Wilson',
-      rating: 4.2,
-      rooms: 38,
-      price: 3200,
-      status: 'Suspended',
-      image: 'https://images.pexels.com/photos/1743229/pexels-photo-1743229.jpeg?auto=compress&cs=tinysrgb&w=400',
-      bookings: 67,
-      revenue: 45000,
-      submissionDate: '2023-12-20',
-      description: 'Peaceful lakeside resort perfect for relaxation and water activities.',
-      amenities: ['WiFi', 'Lake Access', 'Boat Rental', 'Restaurant', 'Spa'],
-      contact: {
-        phone: '+977-61-456789',
-        email: 'info@lakeside.com'
-      },
-      policies: {
-        checkIn: '2:00 PM',
-        checkOut: '11:00 AM',
-        cancellation: 'Free cancellation up to 72 hours before check-in'
-      }
-    }
-  ]);
-
+  const [hotels, setHotels] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalHotels: 0,
+    limit: 12
+  });
+  const { toast } = useToast();
+  const [originalHotels, setOriginalHotels] = useState([]);
+
+  useEffect(() => {
+    fetchHotels();
+  }, [pagination.currentPage, searchTerm, statusFilter]);
+
+  const fetchHotels = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllHotels(
+        pagination.currentPage,
+        pagination.limit,
+        searchTerm
+      );
+      
+      // Filter by status on frontend if needed
+      let filteredHotels = data.hotels || [];
+      if (statusFilter !== 'All') {
+        filteredHotels = filteredHotels.filter(hotel => hotel.status === statusFilter);
+      }
+      
+      setHotels(filteredHotels);
+      setOriginalHotels(data.hotels || []);
+      setPagination(prev => ({
+        ...prev,
+        totalPages: data.totalPages || 1,
+        totalHotels: data.totalHotels || 0
+      }));
+    } catch (error) {
+      console.error('Error fetching hotels:', error);
+      toast.error('Failed to load hotels');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const [showActionMenu, setShowActionMenu] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedHotel, setSelectedHotel] = useState(null);
@@ -119,35 +63,76 @@ const HotelListings = () => {
     setShowActionMenu(null);
   };
 
-  const handleApprove = (hotelId) => {
-    setHotels(hotels.map(hotel => 
-      hotel.id === hotelId ? { ...hotel, status: 'Active' } : hotel
-    ));
+  const handleApprove = async (hotelId) => {
+    try {
+      await updateHotelStatus(hotelId, 'Active');
+      setHotels(hotels.map(hotel => 
+        hotel.id === hotelId ? { ...hotel, status: 'Active' } : hotel
+      ));
+      toast.success('Hotel listing approved successfully!');
+    } catch (error) {
+      console.error('Error approving hotel:', error);
+      toast.error('Failed to approve hotel listing');
+    }
     setShowActionMenu(null);
-    alert('Hotel listing approved successfully!');
   };
 
-  const handleReject = (hotelId) => {
+  const handleReject = async (hotelId) => {
     if (window.confirm('Are you sure you want to reject this hotel listing?')) {
-      setHotels(hotels.map(hotel => 
-        hotel.id === hotelId ? { ...hotel, status: 'Rejected' } : hotel
-      ));
+      try {
+        await updateHotelStatus(hotelId, 'Rejected');
+        setHotels(hotels.map(hotel => 
+          hotel.id === hotelId ? { ...hotel, status: 'Rejected' } : hotel
+        ));
+        toast.success('Hotel listing rejected');
+      } catch (error) {
+        console.error('Error rejecting hotel:', error);
+        toast.error('Failed to reject hotel listing');
+      }
       setShowActionMenu(null);
     }
   };
 
-  const handleSuspend = (hotelId) => {
+  const handleSuspend = async (hotelId) => {
     if (window.confirm('Are you sure you want to suspend this hotel listing?')) {
-      setHotels(hotels.map(hotel => 
-        hotel.id === hotelId ? { ...hotel, status: 'Suspended' } : hotel
-      ));
+      try {
+        await updateHotelStatus(hotelId, 'Suspended');
+        setHotels(hotels.map(hotel => 
+          hotel.id === hotelId ? { ...hotel, status: 'Suspended' } : hotel
+        ));
+        toast.success('Hotel listing suspended');
+      } catch (error) {
+        console.error('Error suspending hotel:', error);
+        toast.error('Failed to suspend hotel listing');
+      }
       setShowActionMenu(null);
     }
   };
 
-  const handleDelete = (hotelId) => {
+  const handleReactivate = async (hotelId) => {
+    try {
+      await updateHotelStatus(hotelId, 'Active');
+      setHotels(hotels.map(hotel => 
+        hotel.id === hotelId ? { ...hotel, status: 'Active' } : hotel
+      ));
+      toast.success('Hotel listing reactivated successfully!');
+    } catch (error) {
+      console.error('Error reactivating hotel:', error);
+      toast.error('Failed to reactivate hotel listing');
+    }
+    setShowActionMenu(null);
+  };
+
+  const handleDelete = async (hotelId) => {
     if (window.confirm('Are you sure you want to delete this hotel listing? This action cannot be undone.')) {
-      setHotels(hotels.filter(hotel => hotel.id !== hotelId));
+      try {
+        await deleteHotel(hotelId);
+        setHotels(hotels.filter(hotel => hotel.id !== hotelId));
+        toast.success('Hotel listing deleted successfully');
+      } catch (error) {
+        console.error('Error deleting hotel:', error);
+        toast.error('Failed to delete hotel listing');
+      }
       setShowActionMenu(null);
     }
   };
@@ -167,13 +152,19 @@ const HotelListings = () => {
     }
   };
 
-  const filteredHotels = hotels.filter(hotel => {
-    const matchesSearch = hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         hotel.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         hotel.hotelier.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'All' || hotel.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, currentPage: newPage }));
+  };
+
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
+    setPagination(prev => ({ ...prev, currentPage: 1 })); // Reset to first page
+  };
+
+  const handleStatusFilterChange = (value) => {
+    setStatusFilter(value);
+    setPagination(prev => ({ ...prev, currentPage: 1 })); // Reset to first page
+  };
 
   return (
     <div className="space-y-6">
@@ -195,7 +186,7 @@ const HotelListings = () => {
                 type="text"
                 placeholder="Search hotels by name, location, or hotelier..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -204,7 +195,7 @@ const HotelListings = () => {
             <Filter className="h-4 w-4 text-gray-500" />
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => handleStatusFilterChange(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="All">All Status</option>
@@ -217,9 +208,17 @@ const HotelListings = () => {
         </div>
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      )}
+
       {/* Hotels Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredHotels.map((hotel) => (
+      {!loading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {hotels.map((hotel) => (
           <div key={hotel.id} className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
             <div className="relative">
               <img 
@@ -340,8 +339,47 @@ const HotelListings = () => {
               </div>
             </div>
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!loading && pagination.totalPages > 1 && (
+        <div className="flex justify-center items-center space-x-2 mt-8">
+          <button
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={pagination.currentPage === 1}
+            className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+          >
+            Previous
+          </button>
+          
+          {[...Array(pagination.totalPages)].map((_, index) => {
+            const page = index + 1;
+            return (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`px-3 py-2 border rounded-lg ${
+                  pagination.currentPage === page
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                {page}
+              </button>
+            );
+          })}
+          
+          <button
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={pagination.currentPage === pagination.totalPages}
+            className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       {/* Hotel Details Modal */}
       {showDetailsModal && selectedHotel && (
@@ -479,19 +517,19 @@ const HotelListings = () => {
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-lg shadow-sm">
-          <div className="text-2xl font-bold text-gray-900">{hotels.length}</div>
+          <div className="text-2xl font-bold text-gray-900">{pagination.totalHotels}</div>
           <div className="text-sm text-gray-600">Total Hotels</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm">
-          <div className="text-2xl font-bold text-green-600">{hotels.filter(h => h.status === 'Active').length}</div>
+          <div className="text-2xl font-bold text-green-600">{originalHotels.filter(h => h.status === 'Active').length}</div>
           <div className="text-sm text-gray-600">Active Hotels</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm">
-          <div className="text-2xl font-bold text-yellow-600">{hotels.filter(h => h.status === 'Pending').length}</div>
+          <div className="text-2xl font-bold text-yellow-600">{originalHotels.filter(h => h.status === 'Pending').length}</div>
           <div className="text-sm text-gray-600">Pending Approval</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm">
-          <div className="text-2xl font-bold text-gray-600">{hotels.reduce((sum, h) => sum + h.revenue, 0).toLocaleString()}</div>
+          <div className="text-2xl font-bold text-gray-600">{originalHotels.reduce((sum, h) => sum + (h.revenue || 0), 0).toLocaleString()}</div>
           <div className="text-sm text-gray-600">Total Revenue (Rs.)</div>
         </div>
       </div>

@@ -1,55 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrendingUp, Users, DollarSign, Calendar } from 'lucide-react';
 import StatCard from '../../components/Hoteler/common/StatCard';
+import Loading from '../../components/common/Loading';
+import { analyticsAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 const Analytics = () => {
   const [timeRange, setTimeRange] = useState('30days');
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState([]);
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [hotelPerformance, setHotelPerformance] = useState([]);
+  const { showToast } = useToast();
 
-  const stats = [
-    {
-      title: 'Total Revenue',
-      value: '$124,500',
-      change: '+18.2%',
-      icon: DollarSign,
-      color: '#97B067'
-    },
-    {
-      title: 'Total Bookings',
-      value: '342',
-      change: '+12.5%',
-      icon: Calendar,
-      color: '#437057'
-    },
-    {
-      title: 'Average Occupancy',
-      value: '76%',
-      change: '+8.1%',
-      icon: Users,
-      color: '#2F5249'
-    },
-    {
-      title: 'Average Daily Rate',
-      value: '$185',
-      change: '+5.3%',
-      icon: TrendingUp,
-      color: '#97B067'
+  const fetchAnalytics = async () => {
+    try {
+      setLoading(true);
+      console.log('📈 [Analytics] Fetching analytics for timeRange:', timeRange);
+      const response = await analyticsAPI.getHotelerAnalytics(timeRange);
+      console.log('📈 [Analytics] Received response:', response);
+      
+      const data = response.data || {};
+      const summary = data.summary || {};
+      console.log('📈 [Analytics] Summary data:', summary);
+      
+      // Set stats with proper formatting
+      setStats([
+        {
+          title: 'Total Revenue',
+          value: `$${(summary.totalRevenue || 0).toLocaleString()}`,
+          change: '+0%',
+          icon: DollarSign,
+          color: '#97B067'
+        },
+        {
+          title: 'Total Bookings',
+          value: (summary.totalBookings || 0).toString(),
+          change: '+0%',
+          icon: Calendar,
+          color: '#437057'
+        },
+        {
+          title: 'Unique Guests',
+          value: (summary.uniqueGuests || 0).toString(),
+          change: '+0%',
+          icon: Users,
+          color: '#2F5249'
+        },
+        {
+          title: 'Average Booking Value',
+          value: `$${(summary.averageBookingValue || 0).toLocaleString()}`,
+          change: '+0%',
+          icon: TrendingUp,
+          color: '#97B067'
+        }
+      ]);
+      
+      setMonthlyData(data.monthlyData || []);
+      console.log('📈 [Analytics] Monthly data:', data.monthlyData);
+      
+      setHotelPerformance(data.hotelPerformance || []);
+      console.log('📈 [Analytics] Hotel performance:', data.hotelPerformance);
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+      showToast('Failed to load analytics data', 'error');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const monthlyData = [
-    { month: 'Jan', revenue: 85000, bookings: 245, occupancy: 72 },
-    { month: 'Feb', revenue: 92000, bookings: 268, occupancy: 75 },
-    { month: 'Mar', revenue: 98000, bookings: 289, occupancy: 78 },
-    { month: 'Apr', revenue: 105000, bookings: 312, occupancy: 82 },
-    { month: 'May', revenue: 118000, bookings: 335, occupancy: 85 },
-    { month: 'Jun', revenue: 124500, bookings: 342, occupancy: 88 },
-  ];
+  useEffect(() => {
+    fetchAnalytics();
+  }, [timeRange]);
 
-  const hotelPerformance = [
-    { name: 'Grand Paradise Resort', revenue: 75000, bookings: 180, occupancy: 85 },
-    { name: 'Ocean View Hotel', revenue: 32000, bookings: 95, occupancy: 78 },
-    { name: 'Mountain Lodge', revenue: 17500, bookings: 67, occupancy: 65 },
-  ];
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

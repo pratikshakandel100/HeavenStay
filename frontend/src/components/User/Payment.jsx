@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { CreditCard, Lock, ArrowLeft, CheckCircle } from 'lucide-react';
+import { getHotelImageUrl } from '../../utils/imageUtils';
 
 const PaymentComponent = () => {
   const { bookingId } = useParams();
@@ -209,7 +210,7 @@ const PaymentComponent = () => {
             <h2 className="text-xl font-bold text-gray-900 mb-4">Booking Summary</h2>
             <div className="flex items-center space-x-4 mb-4">
               <img
-                src={bookingData.hotel.image}
+                src={getHotelImageUrl(bookingData.hotel)}
                 alt={bookingData.hotel.name}
                 className="w-16 h-16 rounded-lg object-cover"
               />

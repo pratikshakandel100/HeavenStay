@@ -10,9 +10,15 @@ function HomeP() {
   const renderPage = () => {
     switch (currentPage) {
       case 'login':
-        return <Login onBack={() => setCurrentPage('homepage')} />;
+        return <Login 
+          onBack={() => setCurrentPage('homepage')} 
+          onSignupClick={() => setCurrentPage('signup')}
+        />;
       case 'signup':
-        return <Signup onBack={() => setCurrentPage('homepage')} />;
+        return <Signup 
+          onBack={() => setCurrentPage('homepage')} 
+          onLoginClick={() => setCurrentPage('login')}
+        />;
       default:
         return (
           <Homepage

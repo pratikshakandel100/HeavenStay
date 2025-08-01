@@ -1,32 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { reviewsAPI } from "../../services/api";
+import { toast } from "react-hot-toast";
 
-// Custom theme color
 const themeColor = "#2f5249";
-
-// Dummy reviews data
-const reviews = [
-  {
-    id: 1,
-    name: "John Doe",
-    rating: 5,
-    comment: "Outstanding service and beautiful rooms!",
-    date: "2025-07-25",
-  },
-  {
-    id: 2,
-    name: "Mary Jane",
-    rating: 4,
-    comment: "Great experience, but breakfast could be better.",
-    date: "2025-07-22",
-  },
-  {
-    id: 3,
-    name: "Alex Smith",
-    rating: 3,
-    comment: "Room was clean but staff was a bit slow.",
-    date: "2025-07-18",
-  },
-];
 
 // Star Rating component
 const StarRating = ({ rating }) => {
@@ -63,8 +39,100 @@ const ReviewCard = ({ name, rating, comment, date }) => (
   </div>
 );
 
-// Hotel Review Page
-const HotelReviewPage = () => {
+const HotelReviewPage = ({ hotelId }) => {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchReviews();
+  }, [hotelId]);
+
+  const fetchReviews = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      if (hotelId) {
+        console.log('🔍 [Reviews] Fetching reviews for hotel:', hotelId);
+        const response = await reviewsAPI.getHotelReviews(hotelId);
+        console.log('🔍 [Reviews] Received response:', response);
+        
+        const reviewsData = response.reviews || response.data || [];
+        console.log('🔍 [Reviews] Reviews data:', reviewsData);
+        
+        const formattedReviews = reviewsData.map(review => ({
+          id: review.id,
+          name: review.user?.name || review.userName || 'Anonymous',
+          rating: review.rating,
+          comment: review.comment,
+          date: review.createdAt || review.date
+        }));
+        
+        setReviews(formattedReviews);
+      } else {
+        const response = await reviewsAPI.getUserReviews();
+        console.log('🔍 [Reviews] User reviews response:', response);
+        
+        const reviewsData = response.reviews || response.data || [];
+        const formattedReviews = reviewsData.map(review => ({
+          id: review.id,
+          name: review.hotel?.name || 'Hotel',
+          rating: review.rating,
+          comment: review.comment,
+          date: review.createdAt || review.date
+        }));
+        
+        setReviews(formattedReviews);
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+      setError('Failed to load reviews');
+      toast.error('Failed to load reviews');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 px-10 py-14">
+        <div className="max-w-5xl mx-auto">
+          <h1 className="text-4xl font-bold mb-10" style={{ color: themeColor }}>
+            Hotel Reviews
+          </h1>
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2f5249] mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading reviews...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 px-10 py-14">
+        <div className="max-w-5xl mx-auto">
+          <h1 className="text-4xl font-bold mb-10" style={{ color: themeColor }}>
+            Hotel Reviews
+          </h1>
+          <div className="text-center py-12">
+            <p className="text-red-500 text-lg">{error}</p>
+            <button 
+              onClick={fetchReviews}
+              className="mt-4 px-6 py-2 bg-[#2f5249] text-white rounded-lg hover:bg-[#1e392f] transition"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 px-10 py-14">
       <div className="max-w-5xl mx-auto">
@@ -72,13 +140,17 @@ const HotelReviewPage = () => {
           className="text-4xl font-bold mb-10"
           style={{ color: themeColor }}
         >
-          Hotel Reviews
+          {hotelId ? 'Hotel Reviews' : 'My Reviews'}
         </h1>
 
         {reviews.length === 0 ? (
-          <p className="text-gray-500 text-lg">No reviews available yet.</p>
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">
+              {hotelId ? 'No reviews available for this hotel yet.' : 'You haven\'t written any reviews yet.'}
+            </p>
+          </div>
         ) : (
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {reviews.map((review) => (
               <ReviewCard key={review.id} {...review} />
             ))}

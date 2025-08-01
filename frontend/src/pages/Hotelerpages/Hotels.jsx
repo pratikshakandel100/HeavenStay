@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, MapPin, Star, DollarSign, Eye } from 'lucide-react'
 import Button from '../../components/Hoteler/common/Button';
 import Modal from '../../components/Hoteler/common/Modal';
 import HotelForm from '../../components/Hoteler/forms/HotelForm';
+import { getHotelImageUrl } from '../../utils/imageUtils';
 
 
 const Hotels = () => {
@@ -97,7 +98,7 @@ const Hotels = () => {
         {hotels.map((hotel) => (
           <div key={hotel.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
             <img 
-              src={hotel.image} 
+              src={getHotelImageUrl(hotel)} 
               alt={hotel.name}
               className="w-full h-48 object-cover"
             />

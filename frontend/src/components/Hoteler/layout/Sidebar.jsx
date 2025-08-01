@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Home, 
@@ -9,18 +9,35 @@ import {
   BarChart3, 
   Hotel, 
   CreditCard,
+  Bell,
   X
 } from 'lucide-react';
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    // Get user data from localStorage
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        setUserName(user.fullName || user.name || 'User');
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        setUserName('User');
+      }
+    }
+  }, []);
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/hoteler/dashboard' },
     { id: 'rooms', label: 'Rooms', icon: Building, path: '/hoteler/rooms' },
     { id: 'bookings', label: 'Bookings', icon: Calendar, path: '/hoteler/bookings' },
     // { id: 'messages', label: 'Messages', icon: MessageSquare, path: '/hoteler/messages' },
+    { id: 'notifications', label: 'Notifications', icon: Bell, path: '/hoteler/notifications' },
     { id: 'reviews', label: 'Reviews', icon: Star, path: '/hoteler/reviews' },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/hoteler/analytics' },
     { id: 'hotel-profile', label: 'Hotel Profile', icon: Hotel, path: '/hoteler/hotel-profile' },
@@ -95,8 +112,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                 <Hotel className="h-6 w-6 text-gray-600" />
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-white">Grand Paradise Resort</p>
-                <p className="text-xs text-gray-300">Hotel Manager</p>
+                <p className="text-sm font-medium text-white">{userName}</p>
+                <p className="text-xs text-gray-300">Hotelier</p>
               </div>
             </div>
           </div>

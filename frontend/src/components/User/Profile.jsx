@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   User,
   Mail,
@@ -8,17 +8,36 @@ import {
   MapPin,
   Flag
 } from 'lucide-react';
+import api from '../../services/api';
+import { toast } from 'react-hot-toast';
 
 const ProfileComponent = ({ user, setUser }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: user.name,
-    email: user.email,
-    phone: user.phone,
-    address: user.address || '',
-    nationality: user.nationality || 'Nepal',
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    address: user?.address || '',
+    nationality: user?.nationality || 'Nepal',
   });
+
+  // Update form data when user prop changes
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        nationality: user.nationality || 'Nepal',
+      });
+    }
+  }, [user]);
+
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -28,16 +47,29 @@ const ProfileComponent = ({ user, setUser }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
 
-    setUser((prev) => ({
-      ...prev,
-      ...formData
-    }));
-
-    setIsEditing(false);
-    alert('Profile updated successfully!');
+    try {
+      const response = await api.auth.updateProfileWithAvatar(formData);
+      
+      if (response.success) {
+        const updatedUser = { ...user, ...formData };
+        if (setUser) {
+          setUser(updatedUser);
+        }
+        setIsEditing(false);
+        toast.success('Profile updated successfully!');
+      } else {
+        toast.error(response.message || 'Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Profile update error:', error);
+      toast.error('Failed to update profile. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleAvatarChange = (e) => {
@@ -53,6 +85,16 @@ const ProfileComponent = ({ user, setUser }) => {
       reader.readAsDataURL(file);
     }
   };
+
+  if (!user) {
+    return (
+      <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-lg text-gray-600">Loading profile...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
@@ -172,10 +214,11 @@ const ProfileComponent = ({ user, setUser }) => {
           {isEditing && (
             <button
               type="submit"
-              className="flex items-center gap-2 bg-[#2f5249] text-white px-5 py-2 rounded hover:bg-[#1e392f] transition"
+              disabled={saving}
+              className="flex items-center gap-2 bg-[#2f5249] text-white px-5 py-2 rounded hover:bg-[#1e392f] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4" />
-              Save
+              {saving ? 'Saving...' : 'Save'}
             </button>
           )}
         </div>

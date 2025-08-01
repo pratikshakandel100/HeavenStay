@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Mail, Lock, Eye, EyeOff, User, Phone, ArrowLeft, Building } from 'lucide-react';
 
-const Signup = ({ onBack }) => {
+const Signup = ({ onBack, onLoginClick }) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -125,9 +125,10 @@ const Signup = ({ onBack }) => {
 
     // Prepare data to send to backend
     const dataToSend = {
-      role: formData.userType === 'user' ? 'guest' : 'owner',
+      role: formData.userType === 'user' ? 'user' : 'hotelier',
       firstName: formData.firstName,
       lastName: formData.lastName,
+      name: formData.firstName + formData.lastName,
       email: formData.email,
       phone: formData.phone,
       password: formData.password,
@@ -135,10 +136,7 @@ const Signup = ({ onBack }) => {
       hotelAddress: formData.userType === 'hotel_owner' ? formData.hotelAddress : undefined
     };
 
-    // Choose API endpoint based on userType
-    const url = formData.userType === 'user'
-      ? 'http://localhost:3001/api/auth/guest/register'
-      : 'http://localhost:3001/api/auth/owner/register';
+    const url = 'http://localhost:5000/api/auth/register';
  
     try {
       const res = await axios.post(url, dataToSend);
@@ -363,7 +361,13 @@ const Signup = ({ onBack }) => {
           {submitSuccess && <p className="text-center text-green-600 mt-3">{submitSuccess}</p>}
 
           <p className="text-center text-sm mt-4 text-gray-600">
-            Already have an account? <a href="#" className="text-green-600 font-medium">Sign in here</a>
+            Already have an account? <button 
+              type="button"
+              onClick={onLoginClick}
+              className="text-green-600 font-medium underline"
+            >
+              Sign in here
+            </button>
           </p>
         </form>
       </div>

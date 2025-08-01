@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, User, DollarSign, Clock, CheckCircle, XCircle, Phone, Mail, MapPin } from 'lucide-react';
+import { bookingsAPI } from '../../services/api';
+import Loading from '../../components/common/Loading';
+import { useToast } from '../../context/ToastContext';
 
 const Button = ({ children, onClick, size = 'md', variant = 'primary', className = '', ...props }) => {
   const baseClasses = 'inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
@@ -27,74 +30,79 @@ const Button = ({ children, onClick, size = 'md', variant = 'primary', className
 };
 
 const Bookings = () => {
-  const [bookings, setBookings] = useState([
-    {
-      id: 1,
-      guestName: 'Sarah Johnson',
-      guestEmail: 'sarah.johnson@email.com',
-      hotel: 'Grand Paradise Resort',
-      checkIn: '2024-01-15',
-      checkOut: '2024-01-18',
-      guests: 2,
-      amount: '$360',
-      status: 'Confirmed',
-      phone: '+1 555-0123'
-    },
-    {
-      id: 2,
-      guestName: 'Michael Chen',
-      guestEmail: 'michael.chen@email.com',
-      hotel: 'Ocean View Hotel',
-      checkIn: '2024-01-20',
-      checkOut: '2024-01-25',
-      guests: 4,
-      amount: '$1,250',
-      status: 'Checked-in',
-      phone: '+1 555-0456'
-    },
-    {
-      id: 3,
-      guestName: 'Emma Wilson',
-      guestEmail: 'emma.wilson@email.com',
-      hotel: 'Mountain Lodge',
-      checkIn: '2024-01-10',
-      checkOut: '2024-01-12',
-      guests: 2,
-      amount: '$360',
-      status: 'Completed',
-      phone: '+1 555-0789'
-    },
-    {
-      id: 4,
-      guestName: 'David Rodriguez',
-      guestEmail: 'david.rodriguez@email.com',
-      hotel: 'Grand Paradise Resort',
-      checkIn: '2024-01-25',
-      checkOut: '2024-01-28',
-      guests: 3,
-      amount: '$450',
-      status: 'Cancelled',
-      phone: '+1 555-0321'
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    fetchBookings();
+  }, []);
+
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      console.log('🔍 Fetching hotelier bookings...');
+      const response = await bookingsAPI.getHotelierBookings();
+      console.log('📦 Raw API response:', response);
+      
+      const bookingsData = response.bookings || response.data || response || [];
+      console.log('📋 Extracted bookings data:', bookingsData);
+      console.log('📊 Number of bookings:', bookingsData.length);
+      
+      const formattedBookings = bookingsData.map(booking => ({
+        id: booking.id,
+        guestName: booking.user?.name || 'Unknown Guest',
+        guestEmail: booking.user?.email || 'No email',
+        hotel: booking.hotel?.name || 'Unknown Hotel',
+        checkIn: booking.checkIn,
+        checkOut: booking.checkOut,
+        guests: booking.guests,
+        amount: `$${booking.total}`,
+        status: booking.status,
+        phone: booking.user?.phone || 'No phone',
+        roomType: booking.room?.name || booking.roomType || 'Unknown Room',
+        bookingId: booking.bookingId,
+        paymentMethod: booking.paymentMethod,
+        paymentStatus: booking.paymentStatus
+      }));
+      
+      console.log('✅ Formatted bookings:', formattedBookings);
+      setBookings(formattedBookings);
+    } catch (error) {
+      console.error('❌ Error fetching bookings:', error);
+      console.log('🔍 Error details:', error.response?.data || error.message);
+      showToast('Failed to load bookings', 'error');
+      setBookings([]);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
   const [statusFilter, setStatusFilter] = useState('All');
 
-  const updateBookingStatus = (id, newStatus) => {
-    setBookings(bookings.map(booking =>
-      booking.id === id ? { ...booking, status: newStatus } : booking
-    ));
+  const updateBookingStatus = async (id, newStatus) => {
+    try {
+      await bookingsAPI.updateStatus(id, { status: newStatus });
+      setBookings(bookings.map(booking =>
+        booking.id === id ? { ...booking, status: newStatus } : booking
+      ));
+      showToast('Booking status updated successfully', 'success');
+    } catch (error) {
+      console.error('Error updating booking status:', error);
+      showToast('Failed to update booking status', 'error');
+    }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
       case 'Confirmed':
-        return 'bg-blue-100 text-blue-800';
-      case 'Checked-in':
+      case 'upcoming':
         return 'bg-green-100 text-green-800';
-      case 'Completed':
+      case 'checked-in':
+        return 'bg-blue-100 text-blue-800';
+      case 'completed':
         return 'bg-gray-100 text-gray-800';
-      case 'Cancelled':
+      case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -104,21 +112,51 @@ const Bookings = () => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'Confirmed':
+      case 'upcoming':
         return <Clock className="h-4 w-4" />;
-      case 'Checked-in':
+      case 'checked-in':
         return <CheckCircle className="h-4 w-4" />;
-      case 'Completed':
+      case 'completed':
         return <CheckCircle className="h-4 w-4" />;
-      case 'Cancelled':
+      case 'cancelled':
         return <XCircle className="h-4 w-4" />;
       default:
         return <Clock className="h-4 w-4" />;
     }
   };
 
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'upcoming':
+        return 'Confirmed';
+      case 'checked-in':
+        return 'Checked In';
+      case 'completed':
+        return 'Completed';
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        return status;
+    }
+  };
+
   const filteredBookings = statusFilter === 'All' 
     ? bookings 
     : bookings.filter(booking => booking.status === statusFilter);
+
+  console.log('📊 All bookings:', bookings);
+  console.log('🔍 Status filter:', statusFilter);
+  console.log('📋 Filtered bookings:', filteredBookings);
+  console.log('📈 Booking count - Total:', bookings.length, 'Filtered:', filteredBookings.length);
+  console.log('🔍 Booking statuses:', bookings.map(b => ({ id: b.id, status: b.status, guestName: b.guestName })));
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loading size="large" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
@@ -132,7 +170,7 @@ const Bookings = () => {
           
           {/* Status Filter */}
           <div className="flex flex-wrap gap-2">
-            {['All', 'Confirmed', 'Checked-in', 'Completed', 'Cancelled'].map((status) => (
+            {['All', 'upcoming', 'checked-in', 'completed', 'cancelled'].map((status) => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
@@ -142,13 +180,30 @@ const Bookings = () => {
                     : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
                 }`}
               >
-                {status}
+                {status === 'upcoming' ? 'Upcoming' : status === 'checked-in' ? 'Checked In' : status === 'completed' ? 'Completed' : status === 'cancelled' ? 'Cancelled' : status}
               </button>
             ))}
           </div>
         </div>
 
+        {/* Empty State */}
+        {filteredBookings.length === 0 && (
+          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+            <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {statusFilter === 'All' ? 'No bookings yet' : `No ${statusFilter.toLowerCase()} bookings`}
+            </h3>
+            <p className="text-gray-600">
+              {statusFilter === 'All' 
+                ? 'Bookings will appear here once guests start making reservations.'
+                : `No bookings with ${statusFilter.toLowerCase()} status found.`
+              }
+            </p>
+          </div>
+        )}
+
         {/* Desktop Table View */}
+        {filteredBookings.length > 0 && (
         <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -187,53 +242,55 @@ const Bookings = () => {
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {booking.guestName}
+                            {booking.user?.fullName || booking.guestName || 'N/A'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {booking.guestEmail}
+                            {booking.user?.email || booking.guestEmail || 'N/A'}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{booking.hotel}</div>
+                      <div className="text-sm text-gray-900">{booking.hotel?.name || booking.hotel || 'N/A'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {new Date(booking.checkIn).toLocaleDateString()} - 
-                        {new Date(booking.checkOut).toLocaleDateString()}
+                        {new Date(booking.checkInDate || booking.checkIn).toLocaleDateString()} - 
+                        {new Date(booking.checkOutDate || booking.checkOut).toLocaleDateString()}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{booking.guests}</div>
+                      <div className="text-sm text-gray-900">{booking.numberOfGuests || booking.guests || 0}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{booking.amount}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        Rs. {(booking.totalAmount || booking.amount || 0).toLocaleString()}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
                         {getStatusIcon(booking.status)}
-                        <span className="ml-1">{booking.status}</span>
+                        <span className="ml-1">{getStatusLabel(booking.status)}</span>
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
-                        {booking.status === 'Confirmed' && (
+                        {booking.status === 'upcoming' && (
                           <Button
-                            onClick={() => updateBookingStatus(booking.id, 'Checked-in')}
+                            onClick={() => updateBookingStatus(booking.id, 'checked-in')}
                             size="sm"
                             className="bg-green-600 hover:bg-green-700"
                           >
-                            Check Out
+                            Check In
                           </Button>
                         )}
-                        {booking.status === 'Checked-in' && (
+                        {booking.status === 'checked-in' && (
                           <Button
-                            onClick={() => updateBookingStatus(booking.id, 'Completed')}
+                            onClick={() => updateBookingStatus(booking.id, 'completed')}
                             size="sm"
                             className="bg-blue-600 hover:bg-blue-700"
                           >
-                            Complete
+                            Check Out
                           </Button>
                         )}
                         <Button
@@ -251,8 +308,10 @@ const Bookings = () => {
             </table>
           </div>
         </div>
+        )}
 
         {/* Mobile Card View */}
+        {filteredBookings.length > 0 && (
         <div className="lg:hidden space-y-4">
           {filteredBookings.map((booking) => (
             <div key={booking.id} className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
@@ -263,16 +322,16 @@ const Bookings = () => {
                     <User className="h-6 w-6 text-gray-600" />
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-lg font-medium text-gray-900">{booking.guestName}</h3>
+                    <h3 className="text-lg font-medium text-gray-900">{booking.user?.fullName || booking.guestName || 'N/A'}</h3>
                     <p className="text-sm text-gray-500 flex items-center">
                       <Mail className="h-4 w-4 mr-1" />
-                      {booking.guestEmail}
+                      {booking.user?.email || booking.guestEmail || 'N/A'}
                     </p>
                   </div>
                 </div>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
                   {getStatusIcon(booking.status)}
-                  <span className="ml-1">{booking.status}</span>
+                  <span className="ml-1">{getStatusLabel(booking.status)}</span>
                 </span>
               </div>
 
@@ -280,7 +339,7 @@ const Bookings = () => {
               <div className="mb-4">
                 <div className="flex items-center text-sm text-gray-600 mb-2">
                   <MapPin className="h-4 w-4 mr-2" />
-                  <span className="font-medium">{booking.hotel}</span>
+                  <span className="font-medium">{booking.hotel?.name || booking.hotel || 'N/A'}</span>
                 </div>
               </div>
 
@@ -289,51 +348,53 @@ const Bookings = () => {
                 <div>
                   <p className="text-xs text-gray-500 uppercase tracking-wide">Check-in</p>
                   <p className="text-sm font-medium text-gray-900">
-                    {new Date(booking.checkIn).toLocaleDateString()}
+                    {new Date(booking.checkInDate || booking.checkIn).toLocaleDateString()}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 uppercase tracking-wide">Check-out</p>
                   <p className="text-sm font-medium text-gray-900">
-                    {new Date(booking.checkOut).toLocaleDateString()}
+                    {new Date(booking.checkOutDate || booking.checkOut).toLocaleDateString()}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 uppercase tracking-wide">Guests</p>
-                  <p className="text-sm font-medium text-gray-900">{booking.guests}</p>
+                  <p className="text-sm font-medium text-gray-900">{booking.numberOfGuests || booking.guests || 0}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 uppercase tracking-wide">Amount</p>
-                  <p className="text-sm font-medium text-gray-900">{booking.amount}</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    Rs. {(booking.totalAmount || booking.amount || 0).toLocaleString()}
+                  </p>
                 </div>
               </div>
 
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-gray-200">
-                {booking.status === 'Confirmed' && (
+                {booking.status === 'upcoming' && (
                   <Button
-                    onClick={() => updateBookingStatus(booking.id, 'Checked-in')}
+                    onClick={() => updateBookingStatus(booking.id, 'checked-in')}
                     size="sm"
                     className="bg-green-600 hover:bg-green-700 flex-1"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Check In
+                  </Button>
+                )}
+                {booking.status === 'checked-in' && (
+                  <Button
+                    onClick={() => updateBookingStatus(booking.id, 'completed')}
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 flex-1"
                   >
                     <CheckCircle className="h-4 w-4 mr-2" />
                     Check Out
                   </Button>
                 )}
-                {booking.status === 'Checked-in' && (
-                  <Button
-                    onClick={() => updateBookingStatus(booking.id, 'Completed')}
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700 flex-1"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Complete
-                  </Button>
-                )}
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => alert(`Calling ${booking.phone}`)}
+                  onClick={() => alert(`Calling ${booking.user?.phone || booking.phone || 'No phone available'}`)}
                   className="flex-1"
                 >
                   <Phone className="h-4 w-4 mr-2" />
@@ -343,18 +404,6 @@ const Bookings = () => {
             </div>
           ))}
         </div>
-
-        {/* Empty State */}
-        {filteredBookings.length === 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
-            <p className="text-gray-500">
-              {statusFilter === 'All' 
-                ? 'No bookings available at the moment.' 
-                : `No bookings with status "${statusFilter}" found.`}
-            </p>
-          </div>
         )}
       </div>
     </div>

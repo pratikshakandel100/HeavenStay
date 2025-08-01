@@ -1,75 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, Reply, Flag, User, ThumbsUp, Filter } from 'lucide-react';
 import Button from '../../components/Hoteler/common/Button';
+import { reviewsAPI } from '../../services/api';
+import Loading from '../../components/common/Loading';
+import { useToast } from '../../context/ToastContext';
 
 const Reviews = () => {
-  const [reviews, setReviews] = useState([
-    {
-      id: 1,
-      guestName: 'Sarah Johnson',
-      guestEmail: 'sarah.johnson@email.com',
-      roomType: 'Deluxe Room',
-      rating: 5,
-      comment: 'Absolutely amazing stay! The staff was incredibly helpful and the ocean view was breathtaking. The room was spotless and the amenities exceeded my expectations. Will definitely come back!',
-      date: '2024-01-10',
-      replied: false,
-      reply: '',
-      helpful: 12,
-      verified: true
-    },
-    {
-      id: 2,
-      guestName: 'Michael Chen',
-      guestEmail: 'michael.chen@email.com',
-      roomType: 'Standard Room',
-      rating: 4,
-      comment: 'Great location and clean rooms. The breakfast could be improved, but overall a pleasant experience. Staff was friendly and check-in was smooth.',
-      date: '2024-01-08',
-      replied: true,
-      reply: 'Thank you for your feedback, Michael! We\'re glad you enjoyed your stay. We\'ve shared your breakfast feedback with our kitchen team and are working on improvements.',
-      helpful: 8,
-      verified: true
-    },
-    {
-      id: 3,
-      guestName: 'Emma Wilson',
-      guestEmail: 'emma.wilson@email.com',
-      roomType: 'Suite',
-      rating: 5,
-      comment: 'Perfect mountain getaway! The lodge has such a cozy atmosphere and the hiking trails nearby are fantastic. The suite was luxurious and the service was top-notch.',
-      date: '2024-01-05',
-      replied: false,
-      reply: '',
-      helpful: 15,
-      verified: true
-    },
-    {
-      id: 4,
-      guestName: 'David Rodriguez',
-      guestEmail: 'david.rodriguez@email.com',
-      roomType: 'Standard Room',
-      rating: 3,
-      comment: 'The hotel is nice but the wifi was spotty in our room. The pool area was crowded most of the time. Room service was slow but the food was good.',
-      date: '2024-01-03',
-      replied: false,
-      reply: '',
-      helpful: 5,
-      verified: true
-    },
-    {
-      id: 5,
-      guestName: 'Lisa Thompson',
-      guestEmail: 'lisa.thompson@email.com',
-      roomType: 'Presidential Suite',
-      rating: 5,
-      comment: 'Exceptional experience! The presidential suite was beyond our expectations. Butler service was outstanding and the panoramic views were incredible. Worth every penny!',
-      date: '2024-01-01',
-      replied: true,
-      reply: 'Thank you so much for choosing our Presidential Suite, Lisa! We\'re thrilled that you had such a wonderful experience. We look forward to welcoming you back soon.',
-      helpful: 20,
-      verified: true
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  const fetchReviews = async () => {
+    try {
+      setLoading(true);
+      const response = await reviewsAPI.getHotelerReviews();
+      setReviews(response.data || []);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+      showToast('Failed to load reviews', 'error');
+      setReviews([]);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
   const [replyText, setReplyText] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
@@ -86,15 +43,22 @@ const Reviews = () => {
     ));
   };
 
-  const handleReply = (reviewId) => {
+  const handleReply = async (reviewId) => {
     if (replyText.trim()) {
-      setReviews(reviews.map(review =>
-        review.id === reviewId
-          ? { ...review, replied: true, reply: replyText }
-          : review
-      ));
-      setReplyText('');
-      setReplyingTo(null);
+      try {
+        await reviewsAPI.reply(reviewId, { reply: replyText });
+        setReviews(reviews.map(review =>
+          review.id === reviewId
+            ? { ...review, replied: true, reply: replyText }
+            : review
+        ));
+        setReplyText('');
+        setReplyingTo(null);
+        showToast('Reply sent successfully', 'success');
+      } catch (error) {
+        console.error('Error sending reply:', error);
+        showToast('Failed to send reply', 'error');
+      }
     }
   };
 
@@ -104,17 +68,25 @@ const Reviews = () => {
     }
   };
 
-  const averageRating = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
+  const averageRating = reviews.length > 0 ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0;
   
   const ratingDistribution = [5, 4, 3, 2, 1].map(rating => ({
     rating,
     count: reviews.filter(r => r.rating === rating).length,
-    percentage: (reviews.filter(r => r.rating === rating).length / reviews.length) * 100
+    percentage: reviews.length > 0 ? (reviews.filter(r => r.rating === rating).length / reviews.length) * 100 : 0
   }));
 
   const filteredReviews = ratingFilter === 'all' 
     ? reviews 
     : reviews.filter(review => review.rating === parseInt(ratingFilter));
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -201,7 +173,24 @@ const Reviews = () => {
         </div>
       </div>
 
+      {/* Empty State */}
+      {filteredReviews.length === 0 && (
+        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+          <Star className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            {ratingFilter === 'all' ? 'No reviews yet' : `No ${ratingFilter}-star reviews`}
+          </h3>
+          <p className="text-gray-600">
+            {ratingFilter === 'all' 
+              ? 'Reviews from guests will appear here once they start sharing their experiences.'
+              : `No reviews with ${ratingFilter} stars found.`
+            }
+          </p>
+        </div>
+      )}
+
       {/* Reviews List */}
+      {filteredReviews.length > 0 && (
       <div className="space-y-4">
         {filteredReviews.map((review) => (
           <div key={review.id} className="bg-white p-6 rounded-lg shadow-sm">
@@ -212,15 +201,15 @@ const Reviews = () => {
                 </div>
                 <div className="ml-4">
                   <div className="flex items-center space-x-2">
-                    <h4 className="text-sm font-medium text-gray-900">{review.guestName}</h4>
-                    {review.verified && (
+                    <h4 className="text-sm font-medium text-gray-900">{review.user?.fullName || review.guestName || 'Anonymous'}</h4>
+                    {(review.verified || review.user?.verified) && (
                       <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
                         Verified
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500">{review.roomType}</p>
-                  <p className="text-xs text-gray-400">{review.guestEmail}</p>
+                  <p className="text-xs text-gray-500">{review.room?.roomType || review.roomType || 'N/A'}</p>
+                  <p className="text-xs text-gray-400">{review.user?.email || review.guestEmail || 'N/A'}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -228,7 +217,7 @@ const Reviews = () => {
                   {renderStars(review.rating)}
                 </div>
                 <span className="text-sm text-gray-500">
-                  {new Date(review.date).toLocaleDateString()}
+                  {new Date(review.createdAt || review.date).toLocaleDateString()}
                 </span>
               </div>
             </div>
@@ -312,6 +301,7 @@ const Reviews = () => {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 };

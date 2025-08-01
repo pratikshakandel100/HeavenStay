@@ -1,10 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, MapPin, Users, Clock, Star, X, CheckCircle } from 'lucide-react';
+import { bookingsAPI, reviewsAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
+import { getHotelImageUrl } from '../../utils/imageUtils';
 
 const MyBookingsComponent = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('upcoming');
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  console.log('👤 Current user:', user);
+  console.log('🔐 Is authenticated:', isAuthenticated());
+  console.log('🆔 User ID:', user?.id);
 
 
 
@@ -19,63 +32,60 @@ const [newCheckOut, setNewCheckOut] = useState('');
 
 
 
-  const bookings = [
-    {
-      id: 'BK001',
-      hotel: {
-        name: 'Himalayan Grand Hotel',
-        location: 'Kathmandu, Nepal',
-        image: 'https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2'
-      },
-      checkIn: '2024-02-15',
-      checkOut: '2024-02-18',
-      guests: 2,
-      roomType: 'Deluxe Room',
-      status: 'upcoming',
-      total: 28275,
-      bookingDate: '2024-01-20',
-      canCancel: true,
-      canReschedule: true
-    },
-    {
-      id: 'BK002',
-      hotel: {
-        name: 'Pokhara Lake Resort',
-        location: 'Pokhara, Nepal',
-        image: 'https://images.pexels.com/photos/1001965/pexels-photo-1001965.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2'
-      },
-      checkIn: '2024-01-10',
-      checkOut: '2024-01-12',
-      guests: 2,
-      roomType: 'Lake View Suite',
-      status: 'completed',
-      total: 14670,
-      bookingDate: '2024-01-05',
-      canReview: true
-    },
-    {
-      id: 'BK003',
-      hotel: {
-        name: 'Chitwan Safari Lodge',
-        location: 'Chitwan, Nepal',
-        image: 'https://images.pexels.com/photos/338504/pexels-photo-338504.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2'
-      },
-      checkIn: '2024-03-01',
-      checkOut: '2024-03-03',
-      guests: 4,
-      roomType: 'Family Room',
-      status: 'cancelled',
-      total: 10170,
-      bookingDate: '2024-01-15',
-      cancellationDate: '2024-01-25'
+  useEffect(() => {
+    fetchBookings();
+  }, []);
+
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      console.log('🔍 Fetching user bookings...');
+      const response = await bookingsAPI.getUserBookings();
+      console.log('📦 Raw API response:', response);
+      console.log('📋 Bookings data:', response.bookings || response);
+      setBookings(response.bookings || response);
+      setError(null);
+    } catch (err) {
+      console.error('❌ Error fetching bookings:', err);
+      setError('Failed to load bookings');
+      toast.error('Failed to load bookings');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const filteredBookings = bookings.filter(booking => booking.status === activeTab);
+  const getBookingStatus = (booking) => {
+    if (booking.status) {
+      return booking.status;
+    }
+    
+    const now = new Date();
+    const checkIn = new Date(booking.checkInDate || booking.checkIn);
+    const checkOut = new Date(booking.checkOutDate || booking.checkOut);
+    
+    if (booking.status === 'cancelled') return 'cancelled';
+    if (now > checkOut) return 'completed';
+    if (now >= checkIn && now <= checkOut) return 'active';
+    return 'upcoming';
+  };
 
-  const handleCancelBooking = (bookingId) => {
+  const filteredBookings = bookings.filter(booking => getBookingStatus(booking) === activeTab);
+  
+  console.log('📊 All bookings:', bookings);
+  console.log('🔍 Active tab:', activeTab);
+  console.log('📋 Filtered bookings:', filteredBookings);
+  console.log('📈 Booking statuses:', bookings.map(b => ({ id: b.id, status: getBookingStatus(b) })));
+
+  const handleCancelBooking = async (bookingId) => {
     if (window.confirm('Are you sure you want to cancel this booking?')) {
-      alert('Booking cancelled successfully');
+      try {
+        await bookingsAPI.cancel(bookingId);
+        toast.success('Booking cancelled successfully');
+        fetchBookings();
+      } catch (error) {
+        console.error('Error cancelling booking:', error);
+        toast.error('Failed to cancel booking');
+      }
     }
   };
 
@@ -87,9 +97,49 @@ const [newCheckOut, setNewCheckOut] = useState('');
   setRescheduleBookingId(bookingId);
 };
 
- const handleLeaveReview = (bookingId) => {
-  setSelectedBookingId(bookingId);
-};
+  const handleLeaveReview = (bookingId) => {
+    setSelectedBookingId(bookingId);
+  };
+
+  const submitReview = async () => {
+    if (!rating || !reviewText.trim()) {
+      toast.error('Please provide both rating and review text');
+      return;
+    }
+
+    try {
+      const booking = bookings.find(b => b._id === selectedBookingId || b.id === selectedBookingId);
+      console.log('🔍 [submitReview] Selected booking:', booking);
+      console.log('🔍 [submitReview] Hotel object:', booking?.hotel);
+      console.log('🔍 [submitReview] Hotel ID attempts:', {
+        '_id': booking?.hotel?._id,
+        'id': booking?.hotel?.id,
+        'final_hotelId': booking?.hotel?._id || booking?.hotel?.id
+      });
+      
+      const hotelId = booking?.hotel?._id || booking?.hotel?.id;
+      if (!hotelId) {
+        console.error('❌ [submitReview] No hotelId found in booking:', booking);
+        toast.error('Unable to submit review: Hotel information missing');
+        return;
+      }
+      
+      await reviewsAPI.create({
+        hotelId: hotelId,
+        bookingId: selectedBookingId,
+        rating: rating,
+        comment: reviewText
+      });
+      toast.success('Review submitted successfully!');
+      setSelectedBookingId(null);
+      setReviewText('');
+      setRating(0);
+      fetchBookings();
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast.error('Failed to submit review');
+    }
+  };
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -117,6 +167,26 @@ const [newCheckOut, setNewCheckOut] = useState('');
     }
   };
 
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-lg text-gray-600">Loading your bookings...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-lg text-red-600">{error}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-8">
@@ -126,9 +196,9 @@ const [newCheckOut, setNewCheckOut] = useState('');
 
       <div className="flex space-x-1 mb-8 bg-gray-100 p-1 rounded-lg">
         {[
-          { key: 'upcoming', label: 'Upcoming', count: bookings.filter(b => b.status === 'upcoming').length },
-          { key: 'completed', label: 'Completed', count: bookings.filter(b => b.status === 'completed').length },
-          { key: 'cancelled', label: 'Cancelled', count: bookings.filter(b => b.status === 'cancelled').length }
+          { key: 'upcoming', label: 'Upcoming', count: bookings.filter(b => getBookingStatus(b) === 'upcoming').length },
+          { key: 'completed', label: 'Completed', count: bookings.filter(b => getBookingStatus(b) === 'completed').length },
+          { key: 'cancelled', label: 'Cancelled', count: bookings.filter(b => getBookingStatus(b) === 'cancelled').length }
         ].map(tab => (
           <button
             key={tab.key}
@@ -167,28 +237,28 @@ const [newCheckOut, setNewCheckOut] = useState('');
           </div>
         ) : (
           filteredBookings.map(booking => (
-            <div key={booking.id} className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div key={booking._id || booking.id} className="bg-white rounded-2xl shadow-lg overflow-hidden">
               <div className="p-6">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex items-start space-x-4 mb-4 lg:mb-0">
                     <img
-                      src={booking.hotel.image}
-                      alt={booking.hotel.name}
+                      src={getHotelImageUrl(booking.hotel)}
+                      alt={booking.hotel?.name || 'Hotel'}
                       className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
                     />
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <h3 className="text-xl font-bold text-gray-900">{booking.hotel.name}</h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
-                          {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                        <h3 className="text-xl font-bold text-gray-900">{booking.hotel?.name || 'Hotel Name'}</h3>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(getBookingStatus(booking))}`}>
+                          {getBookingStatus(booking).charAt(0).toUpperCase() + getBookingStatus(booking).slice(1)}
                         </span>
                       </div>
                       <div className="flex items-center text-gray-600 mb-2">
                         <MapPin size={16} className="mr-1" />
-                        <span className="text-sm">{booking.hotel.location}</span>
+                        <span className="text-sm">{booking.hotel?.location || booking.hotel?.address || 'Location'}</span>
                       </div>
                       <div className="text-sm text-gray-600">
-                        Booking ID: {booking.id}
+                        Booking ID: {booking._id || booking.id}
                       </div>
                     </div>
                   </div>
@@ -196,28 +266,28 @@ const [newCheckOut, setNewCheckOut] = useState('');
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                     <div>
                       <div className="text-gray-600 mb-1">Check-in</div>
-                      <div className="font-medium">{new Date(booking.checkIn).toLocaleDateString()}</div>
+                      <div className="font-medium">{new Date(booking.checkInDate || booking.checkIn).toLocaleDateString()}</div>
                     </div>
                     <div>
                       <div className="text-gray-600 mb-1">Check-out</div>
-                      <div className="font-medium">{new Date(booking.checkOut).toLocaleDateString()}</div>
+                      <div className="font-medium">{new Date(booking.checkOutDate || booking.checkOut).toLocaleDateString()}</div>
                     </div>
                     <div>
                       <div className="text-gray-600 mb-1">Guests</div>
                       <div className="font-medium flex items-center">
                         <Users size={16} className="mr-1" />
-                        {booking.guests}
+                        {booking.guests || booking.numberOfGuests}
                       </div>
                     </div>
                     <div>
                       <div className="text-gray-600 mb-1">Room</div>
-                      <div className="font-medium">{booking.roomType}</div>
+                      <div className="font-medium">{booking.room?.name || booking.room?.type || booking.roomType || 'Room'}</div>
                     </div>
                   </div>
 
                   <div className="text-right mt-4 lg:mt-0">
                     <div className="text-2xl font-bold text-[#2F5249]">
-                      NPR {booking.total.toLocaleString()}
+                      NPR {(booking.totalAmount || booking.total || 0).toLocaleString()}
                     </div>
                     <div className="text-sm text-gray-600">Total paid</div>
                   </div>
@@ -225,29 +295,25 @@ const [newCheckOut, setNewCheckOut] = useState('');
 
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <div className="flex flex-wrap gap-3">
-                    {booking.status === 'upcoming' && (
+                    {getBookingStatus(booking) === 'upcoming' && (
                       <>
-                        {booking.canCancel && (
-                          <button
-                            onClick={() => handleCancelBooking(booking.id)}
-                            className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                          >
-                            Cancel Booking
-                          </button>
-                        )}
-                        {booking.canReschedule && (
-                          <button
-                            onClick={() => handleReschedule(booking.id)}
-                            className="px-4 py-2 border border-[#437057] text-[#437057] rounded-lg hover:bg-[#437057] hover:text-white transition-colors"
-                          >
-                            Reschedule
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handleCancelBooking(booking._id || booking.id)}
+                          className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                        >
+                          Cancel Booking
+                        </button>
+                        <button
+                          onClick={() => handleReschedule(booking._id || booking.id)}
+                          className="px-4 py-2 border border-[#437057] text-[#437057] rounded-lg hover:bg-[#437057] hover:text-white transition-colors"
+                        >
+                          Reschedule
+                        </button>
                       </>
                     )}
-                    {booking.status === 'completed' && booking.canReview && (
+                    {getBookingStatus(booking) === 'completed' && (
                       <button
-                        onClick={() => handleLeaveReview(booking.id)}
+                        onClick={() => handleLeaveReview(booking._id || booking.id)}
                         className="px-4 py-2 bg-[#2F5249] text-white rounded-lg hover:bg-[#437057] transition-colors flex items-center space-x-2"
                       >
                         <Star size={16} />
@@ -255,7 +321,7 @@ const [newCheckOut, setNewCheckOut] = useState('');
                       </button>
                     )}
                     <button
-                      onClick={() => navigate(`/hotel/${booking.hotel.name.toLowerCase().replace(/\s+/g, '-')}`)}
+                      onClick={() => navigate(`/users/hotel/${booking.hotelId || booking.hotel?.id}`)}
                       className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       View Hotel
@@ -304,12 +370,7 @@ const [newCheckOut, setNewCheckOut] = useState('');
         />
       </div>
       <button
-        onClick={() => {
-          alert(`Review submitted!\nRating: ${rating}\nMessage: ${reviewText}`);
-          setSelectedBookingId(null);
-          setRating(0);
-          setReviewText('');
-        }}
+        onClick={submitReview}
         className="w-full bg-[#2F5249] text-white py-2 rounded-md hover:bg-[#437057]"
       >
         Submit Review

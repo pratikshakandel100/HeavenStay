@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, MapPin, Wifi, Car, Coffee, Users } from 'lucide-react';
+import { getHotelImageUrl } from '../../utils/imageUtils';
 
 const HotelCard = ({ hotel }) => {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ const HotelCard = ({ hotel }) => {
     <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
       <div className="relative">
         <img 
-          src={hotel.image} 
+          src={getHotelImageUrl(hotel)} 
           alt={hotel.name}
           className="w-full h-48 sm:h-56 object-cover"
         />
@@ -68,12 +69,12 @@ const HotelCard = ({ hotel }) => {
         <div className="flex items-center justify-between mb-4">
           <div className="text-right">
             <div className="text-2xl font-bold text-[#2F5249]">
-              NPR {hotel.price.toLocaleString()}
+              NPR {(hotel.minPrice || 0).toLocaleString()}
             </div>
             <div className="text-sm text-gray-500">per night</div>
           </div>
           <div className="text-sm text-gray-500">
-            {hotel.reviews} reviews
+            {hotel.totalReviews || 0} reviews
           </div>
         </div>
         

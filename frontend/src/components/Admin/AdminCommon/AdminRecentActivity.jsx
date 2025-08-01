@@ -1,68 +1,132 @@
-import React from 'react';
-import { User, Building, Hotel, AlertTriangle, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Building, Hotel, AlertTriangle, CheckCircle, Calendar } from 'lucide-react';
+import { getRecentActivities } from '../../../services/adminApi';
 
 const AdminRecentActivity = () => {
-  const activities = [
-    {
-      id: 1,
-      type: 'user_registration',
-      message: 'New user registered: Sarah Johnson',
-      time: '5 minutes ago',
-      icon: User,
-      color: 'text-blue-600'
-    },
-    {
-      id: 2,
-      type: 'hotelier_approval',
-      message: 'Hotelier approved: Mountain View Resort',
-      time: '15 minutes ago',
-      icon: CheckCircle,
-      color: 'text-green-600'
-    },
-    {
-      id: 3,
-      type: 'hotel_listing',
-      message: 'New hotel listing submitted for review',
-      time: '1 hour ago',
-      icon: Hotel,
-      color: 'text-purple-600'
-    },
-    {
-      id: 4,
-      type: 'policy_violation',
-      message: 'Hotel listing flagged for policy violation',
-      time: '2 hours ago',
-      icon: AlertTriangle,
-      color: 'text-red-600'
-    },
-    {
-      id: 5,
-      type: 'hotelier_registration',
-      message: 'New hotelier registration: City Center Hotel',
-      time: '3 hours ago',
-      icon: Building,
-      color: 'text-orange-600'
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Icon mapping
+  const iconMap = {
+    User,
+    Building,
+    Hotel,
+    AlertTriangle,
+    CheckCircle,
+    Calendar
+  };
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await getRecentActivities(10);
+        setActivities(response.data || []);
+      } catch (err) {
+        console.error('Error fetching activities:', err);
+        setError('Failed to load recent activities');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, []);
+
+  const handleRefresh = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await getRecentActivities(10);
+      setActivities(response.data || []);
+    } catch (err) {
+      console.error('Error refreshing activities:', err);
+      setError('Failed to refresh activities');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+        <div className="space-y-4">
+          {[...Array(5)].map((_, index) => (
+            <div key={index} className="flex items-start space-x-3 animate-pulse">
+              <div className="p-2 rounded-full bg-gray-200 w-8 h-8"></div>
+              <div className="flex-1 min-w-0">
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-20"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+        <div className="text-center py-8">
+          <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+          <p className="text-sm text-gray-500">{error}</p>
+          <button 
+            onClick={handleRefresh}
+            className="mt-2 text-sm text-blue-600 hover:text-blue-800"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
+        <button 
+          onClick={handleRefresh}
+          className="text-sm text-blue-600 hover:text-blue-800"
+        >
+          Refresh
+        </button>
+      </div>
       <div className="space-y-4">
-        {activities.map((activity) => {
-          const Icon = activity.icon;
-          return (
-            <div key={activity.id} className="flex items-start space-x-3">
-              <div className={`p-2 rounded-full bg-gray-100`}>
-                <Icon className={`h-4 w-4 ${activity.color}`} />
+        {activities.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-sm text-gray-500">No recent activities found</p>
+          </div>
+        ) : (
+          activities.map((activity) => {
+            const Icon = iconMap[activity.icon] || User;
+            return (
+              <div key={activity.id} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                <div className="flex-shrink-0">
+                  {iconMap[activity.icon] && React.createElement(iconMap[activity.icon], {
+                    className: "h-5 w-5 text-blue-600"
+                  })}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900">
+                    {activity.title}
+                  </p>
+                  <p className="text-sm text-gray-600 truncate">
+                    {activity.description}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {activity.relativeTime}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-900">{activity.message}</p>
-                <p className="text-xs text-gray-500">{activity.time}</p>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );

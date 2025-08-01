@@ -1,73 +1,121 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, Bell, Search, User, Settings, LogOut, Shield, Trash2, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
+import { getAdminNotifications, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification } from '../../../services/adminApi';
+import { toast } from 'react-hot-toast';
+import api from '../../../services/api';
+
 
 const AdminHeader = ({ setSidebarOpen, sidebarOpen }) => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: 'New Hotelier Registration',
-      message: 'Mountain View Resort has requested verification',
-      time: '5 minutes ago',
-      unread: true
-    },
-    {
-      id: 2,
-      title: 'Policy Violation Report',
-      message: 'Hotel listing flagged for inappropriate content',
-      time: '1 hour ago',
-      unread: true
-    },
-    {
-      id: 3,
-      title: 'System Maintenance',
-      message: 'Scheduled maintenance completed successfully',
-      time: '3 hours ago',
-      unread: false
-    },
-    {
-      id: 4,
-      title: 'Payment Issue',
-      message: 'Payment gateway experiencing delays',
-      time: '5 hours ago',
-      unread: false
-    },
-    {
-      id: 5,
-      title: 'New User Registration',
-      message: '50+ new users registered today',
-      time: '1 day ago',
-      unread: false
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userLoading, setUserLoading] = useState(true);
+
+  useEffect(() => {
+    fetchNotifications();
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      setUserLoading(true);
+      const userData = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
+
+      if (userData && token) {
+        const parsedUser = JSON.parse(userData);
+        setCurrentUser(parsedUser);
+        return;
+      }
+
+      const response = await api.auth.getProfile();
+      setCurrentUser(response.user);
+    } catch {
+      const userData = localStorage.getItem('user');
+      if (userData) setCurrentUser(JSON.parse(userData));
+    } finally {
+      setUserLoading(false);
     }
-  ]);
-
-  const unreadCount = notifications.filter(n => n.unread).length;
-
-  const handleDeleteNotification = (notificationId) => {
-    setNotifications(notifications.filter(n => n.id !== notificationId));
   };
 
-  const markAsRead = (notificationId) => {
-    setNotifications(notifications.map(n => 
-      n.id === notificationId ? { ...n, unread: false } : n
-    ));
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const response = await getAdminNotifications({ page: 1, limit: 10 });
+      setNotifications(response.notifications || []);
+      setUnreadCount(response.unreadCount || 0);
+    } catch {
+      toast.error('Failed to load notifications');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, unread: false })));
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await markNotificationAsRead(notificationId);
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === notificationId ? { ...notification, isRead: true } : notification
+        )
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    } catch {
+      toast.error('Failed to mark notification as read');
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllNotificationsAsRead();
+      setNotifications((prev) => prev.map((notification) => ({ ...notification, isRead: true })));
+      setUnreadCount(0);
+      toast.success('All notifications marked as read');
+    } catch {
+      toast.error('Failed to mark all notifications as read');
+    }
+  };
+
+  const handleDeleteNotification = async (notificationId) => {
+    try {
+      await deleteNotification(notificationId);
+      setNotifications((prev) => prev.filter((notification) => notification.id !== notificationId));
+      const deletedNotification = notifications.find((n) => n.id === notificationId);
+      if (deletedNotification && !deletedNotification.isRead) {
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
+      toast.success('Notification deleted');
+    } catch {
+      toast.error('Failed to delete notification');
+    }
   };
 
   const handleViewAllNotifications = () => {
     setShowNotifications(false);
-    // Navigate to notifications page
-    window.location.href = '/admin/notifications';
+    navigate('/admin/notifications');
   };
 
   const handleProfileClick = () => {
     setShowUserMenu(false);
-    // Navigate to admin profile page
-    window.location.href = '/admin/profile';
+    navigate('/admin/profile');
+  };
+
+  const handleLogout = async () => {
+    try {
+      setShowUserMenu(false);
+      await logout();
+      navigate('/login');
+      toast.success('Logged out successfully');
+    } catch {
+      toast.error('Failed to logout');
+    }
   };
 
   return (
@@ -77,12 +125,13 @@ const AdminHeader = ({ setSidebarOpen, sidebarOpen }) => {
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            aria-label="Toggle sidebar"
           >
             <Menu className="h-5 w-5" />
           </button>
-          
+
           <div className="ml-4 lg:ml-0">
-            <h1 className="text-xl font-semibold text-gray-900">HevenStay Admin Dashboard</h1>
+            {/* <h1 className="text-xl font-semibold text-gray-900">HevenStay Admin Dashboard</h1> */}
           </div>
         </div>
 
@@ -101,9 +150,10 @@ const AdminHeader = ({ setSidebarOpen, sidebarOpen }) => {
 
           {/* Notifications */}
           <div className="relative">
-            <button 
+            <button
               onClick={() => setShowNotifications(!showNotifications)}
               className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
+              aria-label="Notifications"
             >
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
@@ -118,47 +168,66 @@ const AdminHeader = ({ setSidebarOpen, sidebarOpen }) => {
               <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                 <div className="p-4 border-b border-gray-200 flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
-                  <button 
-                    onClick={markAllAsRead}
-                    className="text-sm text-blue-600 hover:text-blue-700"
-                  >
-                    Mark all as read
-                  </button>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-500">{unreadCount} unread</span>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleMarkAllAsRead}
+                        className="text-xs text-blue-600 hover:text-blue-800"
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="max-h-96 overflow-y-auto">
-                  {notifications.slice(0, 4).map((notification) => (
-                    <div 
-                      key={notification.id} 
-                      className={`p-4 border-b border-gray-100 hover:bg-gray-50 ${
-                        notification.unread ? 'bg-blue-50' : ''
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div 
-                          className="flex-1 cursor-pointer"
-                          onClick={() => markAsRead(notification.id)}
-                        >
-                          <h4 className="text-sm font-medium text-gray-900">{notification.title}</h4>
-                          <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-                          <p className="text-xs text-gray-400 mt-2">{notification.time}</p>
-                        </div>
-                        <div className="flex items-center space-x-2 ml-2">
-                          {notification.unread && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          )}
-                          <button
-                            onClick={() => handleDeleteNotification(notification.id)}
-                            className="text-red-500 hover:text-red-700 p-1"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
+                  {loading ? (
+                    <div className="p-4 text-center text-gray-500">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                      <p className="mt-2 text-sm">Loading notifications...</p>
+                    </div>
+                  ) : notifications.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500">
+                      <Bell className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm">No notifications</p>
+                    </div>
+                  ) : (
+                    notifications.slice(0, 4).map((notification) => (
+                      <div
+                        key={notification.id}
+                        className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
+                          !notification.isRead ? 'bg-blue-50' : ''
+                        }`}
+                        onClick={() => !notification.isRead && handleMarkAsRead(notification.id)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="text-sm font-medium text-gray-900">{notification.title}</h4>
+                            <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
+                            <p className="text-xs text-gray-400 mt-2">
+                              {new Date(notification.createdAt).toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="flex items-center space-x-1 ml-2">
+                            {!notification.isRead && <div className="w-2 h-2 bg-blue-500 rounded-full"></div>}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteNotification(notification.id);
+                              }}
+                              className="text-gray-400 hover:text-red-500 p-1"
+                              aria-label="Delete notification"
+                            >
+                              ×
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
                 <div className="p-4 border-t border-gray-200">
-                  <button 
+                  <button
                     onClick={handleViewAllNotifications}
                     className="w-full text-center text-sm text-blue-600 hover:text-blue-700 flex items-center justify-center"
                   >
@@ -175,26 +244,51 @@ const AdminHeader = ({ setSidebarOpen, sidebarOpen }) => {
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100"
+              aria-haspopup="true"
+              aria-expanded={showUserMenu}
             >
               <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
-                <Shield className="h-5 w-5 text-gray-600" />
+                {currentUser?.avatar ? (
+                  <img
+                    src={currentUser.avatar}
+                    alt="Profile"
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <Shield className="h-5 w-5 text-gray-600" />
+                )}
               </div>
-              <span className="hidden md:block text-sm font-medium text-gray-700">Admin</span>
+              <span className="hidden md:block text-sm font-medium text-gray-700">
+                {userLoading ? 'Loading...' : currentUser?.name || 'Admin'}
+              </span>
             </button>
 
             {/* User Dropdown */}
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                 <div className="p-2">
-                  <button 
+                  <button
                     onClick={handleProfileClick}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg flex items-center"
                   >
                     <User className="h-4 w-4 mr-2" />
                     My Profile
                   </button>
+                  <button
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      navigate('/admin/change-password');
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg flex items-center"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Change Password
+                  </button>
                   <hr className="my-2" />
-                  <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg flex items-center">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg flex items-center"
+                  >
                     <LogOut className="h-4 w-4 mr-2" />
                     Logout
                   </button>

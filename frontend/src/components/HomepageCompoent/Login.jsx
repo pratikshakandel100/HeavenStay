@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, User, Building, Shield } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 
-const Login = ({ onBack }) => {
+const Login = ({ onBack, onSignupClick }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -10,6 +13,11 @@ const Login = ({ onBack }) => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const { showToast } = useToast();
 
   const userTypes = [
     { value: 'user', label: 'Guest/User', icon: User, color: 'text-[#437057]' },
@@ -51,10 +59,37 @@ const Login = ({ onBack }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log('Login data:', formData);
+      setLoading(true);
+      try {
+        const result = await login({
+          email: formData.email,
+          password: formData.password,
+          role: formData.userType === 'hotel_owner' ? 'hotelier' : formData.userType
+        });
+        
+        if (result.success) {
+          showToast('Login successful!', 'success');
+          // Navigate based on user role
+          const userRole = result.user.role;
+          if (userRole === 'admin') {
+            navigate('/admin');
+          } else if (userRole === 'hotelier') {
+            navigate('/hoteler');
+          } else {
+            navigate('/users');
+          }
+        } else {
+          showToast(result.message || 'Login failed', 'error');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        showToast('Network error. Please try again.', 'error');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -192,9 +227,10 @@ const Login = ({ onBack }) => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-[#437057] to-[#2F5249] text-white py-3 px-4 rounded-lg font-semibold hover:from-[#2F5249] hover:to-[#437057] focus:outline-none focus:ring-2 focus:ring-[#437057] focus:ring-offset-2 transition-all duration-200 transform hover:scale-105"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-[#437057] to-[#2F5249] text-white py-3 px-4 rounded-lg font-semibold hover:from-[#2F5249] hover:to-[#437057] focus:outline-none focus:ring-2 focus:ring-[#437057] focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              Sign In
+              {loading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
 
@@ -219,9 +255,13 @@ const Login = ({ onBack }) => {
           {/* Sign Up Link */}
           <p className="mt-8 text-center text-sm text-[#2F5249]">
             Don't have an account?{' '}
-            <a href="#" className="text-[#437057] hover:text-[#2F5249] font-medium transition-colors">
+            <button 
+              type="button"
+              onClick={onSignupClick}
+              className="text-[#437057] hover:text-[#2F5249] font-medium transition-colors underline"
+            >
               Sign up for free
-            </a>
+            </button>
           </p>
         </div>
       </div>

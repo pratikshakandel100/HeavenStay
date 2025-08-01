@@ -1,84 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CreditCard, DollarSign, Calendar, Download, Eye, Plus, User } from 'lucide-react';
 import Button from '../../components/Hoteler/common/Button';
 import Modal from '../../components/Hoteler/common/Modal';
+import { paymentsAPI } from '../../services/api';
 
 const HotelerPayments = () => {
-  const [paymentMethods, setPaymentMethods] = useState([
-    {
-      id: 1,
-      type: 'Pay at Hotel',
-      name: 'Cash Payment',
-      details: 'Accept cash payments at check-in',
-      status: 'Active',
-      primary: true
-    },
-    {
-      id: 2,
-      type: 'eSewa',
-      name: 'eSewa Digital Wallet',
-      details: 'ID: 9841234567',
-      status: 'Active',
-      primary: false,
-      esewaId: '9841234567',
-      accountName: 'Grand Paradise Resort'
-    }
-  ]);
-
-  const [transactions, setTransactions] = useState([
-    {
-      id: 1,
-      date: '2024-01-15',
-      type: 'Booking Payment',
-      guest: 'Sarah Johnson',
-      guestPhone: '+977-9841234567',
-      amount: 15000,
-      status: 'Completed',
-      method: 'eSewa',
-      paymentId: 'ESW123456789',
-      roomType: 'Deluxe Room',
-      nights: 3
-    },
-    {
-      id: 2,
-      date: '2024-01-14',
-      type: 'Booking Payment',
-      guest: 'Michael Chen',
-      guestPhone: '+977-9876543210',
-      amount: 42000,
-      status: 'Completed',
-      method: 'Pay at Hotel',
-      paymentId: 'CASH001',
-      roomType: 'Suite',
-      nights: 4
-    },
-    {
-      id: 3,
-      date: '2024-01-13',
-      type: 'Booking Payment',
-      guest: 'Emma Wilson',
-      guestPhone: '+977-9812345678',
-      amount: 21000,
-      status: 'Pending',
-      method: 'eSewa',
-      paymentId: 'ESW987654321',
-      roomType: 'Standard Room',
-      nights: 6
-    },
-    {
-      id: 4,
-      date: '2024-01-12',
-      type: 'Refund',
-      guest: 'David Rodriguez',
-      guestPhone: '+977-9823456789',
-      amount: -7000,
-      status: 'Completed',
-      method: 'eSewa',
-      paymentId: 'ESW456789123',
-      roomType: 'Standard Room',
-      nights: 2
-    }
-  ]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [summary, setSummary] = useState({
+    totalRevenue: 0,
+    pendingAmount: 0,
+    esewaRevenue: 0,
+    cashRevenue: 0
+  });
 
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
@@ -88,6 +24,51 @@ const HotelerPayments = () => {
     esewaId: '',
     accountName: ''
   });
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterMethod, setFilterMethod] = useState('all');
+  const [dateRange, setDateRange] = useState('30');
+
+  // Fetch data on component mount and when filters change
+  useEffect(() => {
+    fetchPaymentData();
+  }, [filterStatus, filterMethod, dateRange]);
+
+  const fetchPaymentData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Build query parameters
+      const params = {};
+      if (filterStatus !== 'all') params.status = filterStatus;
+      if (filterMethod !== 'all') params.method = filterMethod;
+      if (dateRange !== 'all') params.days = dateRange;
+
+      // Fetch payments and payment methods
+      const [paymentsResponse, methodsResponse] = await Promise.all([
+        paymentsAPI.getHotelerPayments(params),
+        paymentsAPI.getPaymentMethods()
+      ]);
+
+      if (paymentsResponse.success) {
+        setTransactions(paymentsResponse.data.payments);
+        setSummary(paymentsResponse.data.summary);
+      } else {
+        setError(paymentsResponse.message || 'Failed to fetch payments');
+      }
+
+      if (methodsResponse.success) {
+        setPaymentMethods(methodsResponse.data);
+      } else {
+        setError(methodsResponse.message || 'Failed to fetch payment methods');
+      }
+    } catch (err) {
+      setError('An error occurred while fetching data');
+      console.error('Error fetching payment data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -102,21 +83,30 @@ const HotelerPayments = () => {
     }
   };
 
-  const handleAddPaymentMethod = () => {
-    if (newPaymentMethod.type === 'eSewa' && newPaymentMethod.esewaId && newPaymentMethod.accountName) {
-      const newMethod = {
-        id: Date.now(),
-        type: 'eSewa',
-        name: 'eSewa Digital Wallet',
-        details: `ID: ${newPaymentMethod.esewaId}`,
-        status: 'Active',
-        primary: false,
-        esewaId: newPaymentMethod.esewaId,
-        accountName: newPaymentMethod.accountName
-      };
-      setPaymentMethods([...paymentMethods, newMethod]);
-      setNewPaymentMethod({ type: '', esewaId: '', accountName: '' });
-      setShowAddPaymentModal(false);
+  const handleAddPaymentMethod = async () => {
+    if (newPaymentMethod.type === 'eSewa' && (!newPaymentMethod.esewaId || !newPaymentMethod.accountName)) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      const response = await paymentsAPI.addPaymentMethod(newPaymentMethod);
+      
+      if (response.success) {
+        // Refresh payment methods
+        const methodsResponse = await paymentsAPI.getPaymentMethods();
+        if (methodsResponse.success) {
+          setPaymentMethods(methodsResponse.data);
+        }
+        
+        setShowAddPaymentModal(false);
+        setNewPaymentMethod({ type: '', esewaId: '', accountName: '' });
+      } else {
+        alert(response.message || 'Failed to add payment method');
+      }
+    } catch (err) {
+      console.error('Error adding payment method:', err);
+      alert('An error occurred while adding payment method');
     }
   };
 
@@ -125,16 +115,11 @@ const HotelerPayments = () => {
     setShowTransactionModal(true);
   };
 
-  const totalRevenue = transactions
-    .filter(t => t.status === 'Completed' && t.amount > 0)
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const pendingAmount = transactions
-    .filter(t => t.status === 'Pending')
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const esewaTransactions = transactions.filter(t => t.method === 'eSewa' && t.status === 'Completed' && t.amount > 0);
-  const esewaRevenue = esewaTransactions.reduce((sum, t) => sum + t.amount, 0);
+  // Use summary data from API instead of calculating from transactions
+  const totalRevenue = summary.totalRevenue || 0;
+  const pendingAmount = summary.pendingAmount || 0;
+  const esewaRevenue = summary.esewaRevenue || 0;
+  const cashRevenue = summary.cashRevenue || 0;
 
   return (
     <div className="space-y-6">
@@ -197,7 +182,7 @@ const HotelerPayments = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Cash Payments</p>
               <p className="text-2xl font-bold text-gray-900">
-                Rs. {(totalRevenue - esewaRevenue).toLocaleString()}
+                Rs. {cashRevenue.toLocaleString()}
               </p>
             </div>
             <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -253,81 +238,102 @@ const HotelerPayments = () => {
           </Button>
         </div>
         
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
+            {error}
+          </div>
+        )}
+        
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Guest Details
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Booking Info
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Method
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {transactions.map((transaction) => (
-                <tr key={transaction.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(transaction.date).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
-                        <User className="h-4 w-4 text-gray-600" />
-                      </div>
-                      <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900">{transaction.guest}</div>
-                        <div className="text-sm text-gray-500">{transaction.guestPhone}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{transaction.roomType}</div>
-                    <div className="text-sm text-gray-500">{transaction.nights} nights</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <span className={transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'}>
-                      Rs. {Math.abs(transaction.amount).toLocaleString()}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {transaction.method}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(transaction.status)}`}>
-                      {transaction.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => viewTransactionDetails(transaction)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
-                  </td>
+          {loading ? (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-2 text-gray-600">Loading transactions...</span>
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Guest Details
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Booking Info
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Method
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {(!transactions || transactions.length === 0) ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
+                      No transactions found
+                    </td>
+                  </tr>
+                ) : (
+                  transactions.map((transaction) => (
+                    <tr key={transaction.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {new Date(transaction.createdAt || transaction.date).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
+                            <User className="h-4 w-4 text-gray-600" />
+                          </div>
+                          <div className="ml-3">
+                            <div className="text-sm font-medium text-gray-900">{transaction.User?.name || transaction.guest || 'N/A'}</div>
+                            <div className="text-sm text-gray-500">{transaction.User?.email || transaction.guestPhone || 'N/A'}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{transaction.Booking?.Room?.type || transaction.roomType || 'N/A'}</div>
+                        <div className="text-sm text-gray-500">{transaction.Booking?.nights || transaction.nights || 'N/A'} nights</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <span className={transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'}>
+                          Rs. {Math.abs(transaction.amount).toLocaleString()}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {transaction.paymentMethod === 'cash' ? 'Pay at Hotel' : transaction.paymentMethod || transaction.method}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(transaction.status)}`}>
+                          {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => viewTransactionDetails(transaction)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
@@ -412,31 +418,31 @@ const HotelerPayments = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Transaction ID</label>
-                <p className="text-sm text-gray-900">{selectedTransaction.paymentId}</p>
+                <p className="text-sm text-gray-900">{selectedTransaction.transactionId || selectedTransaction.id}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Date</label>
-                <p className="text-sm text-gray-900">{new Date(selectedTransaction.date).toLocaleDateString()}</p>
+                <p className="text-sm text-gray-900">{new Date(selectedTransaction.createdAt || selectedTransaction.date).toLocaleDateString()}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Guest Name</label>
-                <p className="text-sm text-gray-900">{selectedTransaction.guest}</p>
+                <p className="text-sm text-gray-900">{selectedTransaction.User?.name || selectedTransaction.guest || 'N/A'}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                <p className="text-sm text-gray-900">{selectedTransaction.guestPhone}</p>
+                <label className="block text-sm font-medium text-gray-700">Email/Phone</label>
+                <p className="text-sm text-gray-900">{selectedTransaction.User?.email || selectedTransaction.guestPhone || 'N/A'}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Room Type</label>
-                <p className="text-sm text-gray-900">{selectedTransaction.roomType}</p>
+                <p className="text-sm text-gray-900">{selectedTransaction.Booking?.Room?.type || selectedTransaction.roomType || 'N/A'}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Number of Nights</label>
-                <p className="text-sm text-gray-900">{selectedTransaction.nights}</p>
+                <p className="text-sm text-gray-900">{selectedTransaction.Booking?.nights || selectedTransaction.nights || 'N/A'}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Payment Method</label>
-                <p className="text-sm text-gray-900">{selectedTransaction.method}</p>
+                <p className="text-sm text-gray-900">{selectedTransaction.paymentMethod === 'cash' ? 'Pay at Hotel' : selectedTransaction.paymentMethod || selectedTransaction.method}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Amount</label>
@@ -444,11 +450,27 @@ const HotelerPayments = () => {
                   Rs. {Math.abs(selectedTransaction.amount).toLocaleString()}
                 </p>
               </div>
+              {selectedTransaction.hotelerAmount && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Hotelier Amount</label>
+                  <p className="text-sm text-green-600 font-medium">
+                    Rs. {selectedTransaction.hotelerAmount.toLocaleString()}
+                  </p>
+                </div>
+              )}
+              {selectedTransaction.adminCommission && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Admin Commission</label>
+                  <p className="text-sm text-gray-600">
+                    Rs. {selectedTransaction.adminCommission.toLocaleString()}
+                  </p>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Status</label>
               <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(selectedTransaction.status)}`}>
-                {selectedTransaction.status}
+                {selectedTransaction.status.charAt(0).toUpperCase() + selectedTransaction.status.slice(1)}
               </span>
             </div>
           </div>

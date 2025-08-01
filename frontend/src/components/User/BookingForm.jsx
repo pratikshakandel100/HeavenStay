@@ -1,36 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, Users, ArrowLeft, CreditCard } from 'lucide-react';
+import { roomsAPI, bookingsAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 const BookingFormComponent = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // This is the room ID
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [room, setRoom] = useState(null);
+  const [hotel, setHotel] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [bookingData, setBookingData] = useState({
     checkIn: '',
     checkOut: '',
     guests: 1,
-    roomType: 'deluxe',
     specialRequests: ''
   });
 
-  const hotel = {
-    id: '1',
-    name: 'Himalayan Grand Hotel',
-    location: 'Kathmandu, Nepal',
-    image: 'https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2',
-    roomTypes: [
-      { id: 'standard', name: 'Standard Room', price: 6500, capacity: 2 },
-      { id: 'deluxe', name: 'Deluxe Room', price: 8500, capacity: 2 },
-      { id: 'suite', name: 'Suite', price: 12500, capacity: 4 },
-      { id: 'presidential', name: 'Presidential Suite', price: 18500, capacity: 6 }
-    ]
-  };
+  useEffect(() => {
+    const fetchRoomData = async () => {
+      try {
+        setLoading(true);
+        const response = await roomsAPI.getById(id);
+        setRoom(response.room);
+        setHotel(response.room.hotel);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching room data:', err);
+        setError('Failed to load room details');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const selectedRoom = hotel.roomTypes.find(room => room.id === bookingData.roomType);
+    if (id) {
+      fetchRoomData();
+    }
+  }, [id]);
+
   const nights = bookingData.checkIn && bookingData.checkOut
     ? Math.ceil((new Date(bookingData.checkOut).getTime() - new Date(bookingData.checkIn).getTime()) / (1000 * 60 * 60 * 24))
     : 0;
-  const subtotal = selectedRoom ? selectedRoom.price * nights : 0;
+  const subtotal = room ? room.price * nights : 0;
   const tax = subtotal * 0.13;
   const total = subtotal + tax;
 
@@ -42,29 +55,84 @@ const BookingFormComponent = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!bookingData.checkIn || !bookingData.checkOut) {
-      alert('Please select check-in and check-out dates');
+      toast.error('Please select check-in and check-out dates');
       return;
     }
 
-    const bookingId = Math.random().toString(36).substr(2, 9);
-    navigate(`/payment/${bookingId}`, {
-      state: {
-        bookingData: {
-          ...bookingData,
-          hotel,
-          selectedRoom,
-          nights,
-          subtotal,
-          tax,
-          total,
-          bookingId
-        }
-      }
-    });
+    try {
+      const bookingPayload = {
+        hotelId: room.hotelId,
+        roomId: room.id,
+        checkIn: bookingData.checkIn,
+        checkOut: bookingData.checkOut,
+        guests: parseInt(bookingData.guests),
+        roomType: room.type || room.name || 'standard',
+        specialRequests: bookingData.specialRequests || '',
+        paymentMethod: 'esewa'
+      };
+
+      console.log('Booking payload:', bookingPayload);
+      await bookingsAPI.create(bookingPayload);
+      toast.success('Booking confirmed successfully! Your booking details will be available in My Bookings.');
+      navigate('/users/mybookings');
+    } catch (error) {
+      console.error('Booking error:', error);
+      console.error('Error message:', error.message);
+      toast.error(error.message || 'Failed to create booking. Please try again.');
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#437057] mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading room details...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">{error}</p>
+            <button
+              onClick={() => navigate(-1)}
+              className="bg-[#437057] text-white px-4 py-2 rounded-lg hover:bg-[#2F5249] transition-colors"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!room || !hotel) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">Room not found</p>
+            <button
+              onClick={() => navigate(-1)}
+              className="bg-[#437057] text-white px-4 py-2 rounded-lg hover:bg-[#2F5249] transition-colors"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -140,31 +208,41 @@ const BookingFormComponent = () => {
                   onChange={handleInputChange}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#437057] focus:border-transparent"
                 >
-                  {[1, 2, 3, 4, 5, 6].map(num => (
+                  {Array.from({ length: room.capacity }, (_, i) => i + 1).map(num => (
                     <option key={num} value={num}>{num} Guest{num > 1 ? 's' : ''}</option>
                   ))}
                 </select>
               </div>
+              <p className="text-sm text-gray-500 mt-1">Maximum {room.capacity} guests for this room</p>
             </div>
 
-            {/* Room Type */}
-            <div>
-              <label htmlFor="roomType" className="block text-sm font-medium text-gray-700 mb-2">
-                Room Type
-              </label>
-              <select
-                id="roomType"
-                name="roomType"
-                value={bookingData.roomType}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#437057] focus:border-transparent"
-              >
-                {hotel.roomTypes.map(room => (
-                  <option key={room.id} value={room.id}>
-                    {room.name} - NPR {room.price.toLocaleString()} (Max {room.capacity} guests)
-                  </option>
-                ))}
-              </select>
+            {/* Selected Room Info */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Selected Room</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Room:</span>
+                  <span className="font-medium">{room.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Type:</span>
+                  <span className="font-medium capitalize">{room.type}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Price per night:</span>
+                  <span className="font-medium">NPR {room.price.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Capacity:</span>
+                  <span className="font-medium">Up to {room.capacity} guests</span>
+                </div>
+                {room.description && (
+                  <div>
+                    <span className="text-gray-600">Description:</span>
+                    <p className="text-sm text-gray-700 mt-1">{room.description}</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Special Requests */}
@@ -200,7 +278,7 @@ const BookingFormComponent = () => {
             <h2 className="text-xl font-bold text-gray-900 mb-4">Hotel Information</h2>
             <div className="flex items-center space-x-4">
               <img
-                src={hotel.image}
+                src={hotel.images && hotel.images.length > 0 ? hotel.images[0] : '/api/placeholder/64/64'}
                 alt={hotel.name}
                 className="w-16 h-16 rounded-lg object-cover"
               />
@@ -232,8 +310,12 @@ const BookingFormComponent = () => {
                 <span className="font-medium">{bookingData.guests}</span>
               </div>
               <div className="flex justify-between">
+                <span className="text-gray-600">Room:</span>
+                <span className="font-medium">{room?.name}</span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-gray-600">Room Type:</span>
-                <span className="font-medium">{selectedRoom?.name}</span>
+                <span className="font-medium capitalize">{room?.type}</span>
               </div>
             </div>
           </div>
@@ -244,7 +326,7 @@ const BookingFormComponent = () => {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  NPR {selectedRoom?.price.toLocaleString()} x {nights} night{nights !== 1 ? 's' : ''}
+                  NPR {room?.price.toLocaleString()} x {nights} night{nights !== 1 ? 's' : ''}
                 </span>
                 <span className="font-medium">NPR {subtotal.toLocaleString()}</span>
               </div>
