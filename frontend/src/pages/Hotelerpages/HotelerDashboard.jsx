@@ -7,6 +7,7 @@ import OccupancyChart from '../../components/Hoteler/common/OccupancyChart';
 import { bookingsAPI, hotelsAPI } from '../../services/api';
 import Loading from '../../components/common/Loading';
 
+
 const HotelerDashboard = () => {
   const [stats, setStats] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +16,6 @@ const HotelerDashboard = () => {
   const [bookings, setBookings] = useState([]);
 
   useEffect(() => {
-    // Get user data from localStorage
     const userData = localStorage.getItem('user');
     if (userData) {
       try {
@@ -26,49 +26,43 @@ const HotelerDashboard = () => {
         setUserName('User');
       }
     }
-    
+
     fetchDashboardData();
   }, []);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      
-      // Fetch hotels and bookings data
+
       const [hotelsResponse, bookingsResponse] = await Promise.all([
         hotelsAPI.getHotelerHotels(),
         bookingsAPI.getHotelierBookings()
       ]);
-      
+
       const hotelsData = hotelsResponse.hotels || [];
       const bookingsData = bookingsResponse.bookings || [];
-      
+
       setHotels(hotelsData);
       setBookings(bookingsData);
-      
-      // Calculate statistics
-      const activeBookings = bookingsData.filter(booking => 
+
+      const activeBookings = bookingsData.filter(booking =>
         booking.status === 'confirmed' || booking.status === 'checked-in'
       ).length;
-      
+
       const totalRevenue = bookingsData
         .filter(booking => booking.status === 'completed')
         .reduce((sum, booking) => sum + (parseFloat(booking.total) || 0), 0);
-      
-      console.log('📊 [Dashboard] Bookings data:', bookingsData);
-      console.log('📊 [Dashboard] Completed bookings:', bookingsData.filter(booking => booking.status === 'completed'));
-      console.log('📊 [Dashboard] Total revenue calculated:', totalRevenue);
-      
+
       const totalRooms = hotelsData.reduce((sum, hotel) => sum + (hotel.rooms?.length || 0), 0);
-      const occupiedRooms = bookingsData.filter(booking => 
+      const occupiedRooms = bookingsData.filter(booking =>
         booking.status === 'checked-in'
       ).length;
       const occupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
-      
-      const averageRating = hotelsData.length > 0 
+
+      const averageRating = hotelsData.length > 0
         ? (hotelsData.reduce((sum, hotel) => sum + (hotel.rating || 0), 0) / hotelsData.length).toFixed(1)
         : '0.0';
-      
+
       setStats([
         {
           title: 'Total Revenue',
@@ -99,10 +93,9 @@ const HotelerDashboard = () => {
           color: '#97B067'
         }
       ]);
-      
+
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      // Set default stats on error
       setStats([
         {
           title: 'Total Revenue',
@@ -147,7 +140,7 @@ const HotelerDashboard = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pt-20"> {/* Fix: added pt-20 to prevent header overlap */}
       {/* Welcome Section */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back, {userName}!</h2>
@@ -167,7 +160,7 @@ const HotelerDashboard = () => {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Occupancy Overview</h3>
           <OccupancyChart />
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Bookings</h3>
           <RecentBookings />

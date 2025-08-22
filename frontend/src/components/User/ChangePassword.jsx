@@ -3,22 +3,30 @@ import { Eye, EyeOff, Lock, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
+
+
+// Main component for changing the user's password
 const ChangePassword = () => {
+  // We keep the useNavigate hook as it is part of the original logic
   const navigate = useNavigate();
+  // State to manage the form data
   const [formData, setFormData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
+  // State to toggle password visibility for each input field
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
     confirm: false
   });
+  // State for loading, error, and success messages
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Handles input changes and clears messages when the user types
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -29,6 +37,7 @@ const ChangePassword = () => {
     if (success) setSuccess('');
   };
 
+  // Toggles the visibility of a specific password field
   const togglePasswordVisibility = (field) => {
     setShowPasswords(prev => ({
       ...prev,
@@ -36,6 +45,7 @@ const ChangePassword = () => {
     }));
   };
 
+  // Validates the form data before submission
   const validateForm = () => {
     if (!formData.currentPassword) {
       setError('Current password is required');
@@ -60,6 +70,7 @@ const ChangePassword = () => {
     return true;
   };
 
+  // Handles form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -70,16 +81,19 @@ const ChangePassword = () => {
     setSuccess('');
 
     try {
+      // API call to change the password
       await api.auth.changePassword({
         currentPassword: formData.currentPassword,
         newPassword: formData.newPassword
       });
       setSuccess('Password changed successfully!');
+      // Clears the form after successful submission
       setFormData({
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
       });
+      // Navigates back after a delay
       setTimeout(() => {
         navigate(-1);
       }, 2000);
@@ -94,7 +108,8 @@ const ChangePassword = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="bg-blue-600 p-3 rounded-full">
+          {/* Replaced bg-blue-600 with the new hex color */}
+          <div className="bg-[#2f5249] p-3 rounded-full">
             <Lock className="h-8 w-8 text-white" />
           </div>
         </div>
@@ -108,9 +123,10 @@ const ChangePassword = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {/* Replaced text-blue-600 and hover:text-blue-800 with new colors */}
           <button
             onClick={() => navigate(-1)}
-            className="mb-6 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+            className="mb-6 flex items-center text-[#2f5249] hover:text-[#427163] transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
@@ -140,7 +156,7 @@ const ChangePassword = () => {
                   type={showPasswords.current ? 'text' : 'password'}
                   value={formData.currentPassword}
                   onChange={handleInputChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#2f5249] focus:border-[#2f5249] sm:text-sm pr-10"
                   placeholder="Enter your current password"
                 />
                 <button
@@ -168,7 +184,7 @@ const ChangePassword = () => {
                   type={showPasswords.new ? 'text' : 'password'}
                   value={formData.newPassword}
                   onChange={handleInputChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#2f5249] focus:border-[#2f5249] sm:text-sm pr-10"
                   placeholder="Enter your new password"
                 />
                 <button
@@ -196,7 +212,7 @@ const ChangePassword = () => {
                   type={showPasswords.confirm ? 'text' : 'password'}
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#2f5249] focus:border-[#2f5249] sm:text-sm pr-10"
                   placeholder="Confirm your new password"
                 />
                 <button
@@ -217,7 +233,8 @@ const ChangePassword = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                // Replaced bg-blue-600, hover:bg-blue-700, and focus:ring-blue-500
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#2f5249] hover:bg-[#3a695b] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2f5249] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {loading ? 'Changing Password...' : 'Change Password'}
               </button>

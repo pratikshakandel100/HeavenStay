@@ -103,9 +103,9 @@ const Settings = () => {
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
-    { id: 'security', label: 'Security', icon: Shield },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'general', label: 'General', icon: Globe }
+    // { id: 'security', label: 'Security', icon: Shield },
+    // { id: 'notifications', label: 'Notifications', icon: Bell },
+    // { id: 'general', label: 'General', icon: Globe }
   ];
 
   const handleSettingChange = (category, setting, value) => {

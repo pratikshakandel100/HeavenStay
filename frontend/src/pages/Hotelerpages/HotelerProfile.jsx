@@ -8,6 +8,7 @@ import { getImageUrl } from '../../utils/imageUtils';
 
 
 
+
 const HotelProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -236,7 +237,7 @@ const HotelProfile = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+    <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 space-y-6 pt-20">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>

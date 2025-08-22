@@ -122,7 +122,7 @@ const Notifications = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pt-24 px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
